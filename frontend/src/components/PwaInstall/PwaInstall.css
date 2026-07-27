@@ -1,0 +1,170 @@
+﻿.pwa-install-button {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9000;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+
+  min-height: 44px;
+  padding: 0.7rem 1rem;
+
+  border: 1px solid #4f46e5;
+  border-radius: 999px;
+
+  background: #4f46e5;
+  color: #ffffff;
+
+  font-weight: 800;
+  cursor: pointer;
+
+  box-shadow:
+    0 14px 30px rgba(79, 70, 229, 0.28),
+    0 5px 12px rgba(15, 23, 42, 0.12);
+
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.pwa-install-button:hover {
+  transform: translateY(-1px);
+  background: #4338ca;
+  box-shadow:
+    0 16px 34px rgba(79, 70, 229, 0.34),
+    0 6px 14px rgba(15, 23, 42, 0.14);
+}
+
+.pwa-install-button:focus-visible {
+  outline: 3px solid rgba(79, 70, 229, 0.32);
+  outline-offset: 3px;
+}
+
+.pwa-install-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 1rem;
+}
+
+.pwa-install-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.62);
+}
+
+.pwa-install-modal__content {
+  position: relative;
+  z-index: 1;
+
+  width: min(420px, 100%);
+  padding: 1.5rem;
+
+  border: 1px solid rgba(79, 70, 229, 0.2);
+  border-radius: 20px;
+
+  background: #ffffff;
+  color: #111827;
+
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.pwa-install-modal__close {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.8rem;
+
+  width: 38px;
+  height: 38px;
+
+  border: 0;
+  border-radius: 999px;
+
+  background: #f3f4f6;
+  color: #374151;
+
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pwa-install-modal__icon {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-size: 2.3rem;
+}
+
+.pwa-install-modal h2 {
+  margin: 0 2.5rem 0.6rem 0;
+  color: #111827;
+}
+
+.pwa-install-modal p {
+  margin: 0 0 1rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.pwa-install-modal ol {
+  margin: 0 0 1.25rem;
+  padding-left: 1.4rem;
+  color: #374151;
+}
+
+.pwa-install-modal li {
+  margin-bottom: 0.65rem;
+  line-height: 1.45;
+}
+
+.pwa-install-modal__confirm {
+  width: 100%;
+  min-height: 44px;
+
+  border: 1px solid #4f46e5;
+  border-radius: 12px;
+
+  background: #4f46e5;
+  color: #ffffff;
+
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pwa-install-modal__confirm:hover {
+  background: #4338ca;
+}
+
+@media (max-width: 560px) {
+  .pwa-install-button {
+    right: 0.75rem;
+    bottom: 0.75rem;
+  }
+
+  .pwa-install-modal {
+    align-items: flex-end;
+    padding: 0.75rem;
+  }
+
+  .pwa-install-modal__content {
+    border-radius: 20px 20px 14px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pwa-install-button {
+    transition: none;
+  }
+
+  .pwa-install-button:hover {
+    transform: none;
+  }
+}

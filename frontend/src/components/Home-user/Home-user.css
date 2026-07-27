@@ -1,0 +1,885 @@
+/* ===========================================================================
+   RESET LOCALE
+   ========================================================================== */
+
+.home-user-container *,
+.home-user-container *::before,
+.home-user-container *::after {
+  box-sizing: border-box;
+}
+
+/* ===========================================================================
+   PAGINA
+   ========================================================================== */
+
+.home-user-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.12), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(59, 130, 246, 0.1), transparent 30%),
+    linear-gradient(135deg, #ecfeff 0%, #eff6ff 50%, #f8fafc 100%);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* ===========================================================================
+   CARD PRINCIPALE
+   ========================================================================== */
+
+.home-user-box {
+  width: 100%;
+  max-width: 560px;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  box-shadow:
+    0 20px 45px rgba(15, 23, 42, 0.1),
+    0 8px 18px rgba(15, 23, 42, 0.05);
+  padding: 2rem;
+  backdrop-filter: blur(6px);
+}
+
+/* ===========================================================================
+   HEADER
+   ========================================================================== */
+
+.home-user-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.home-user-title {
+  margin: 0 0 0.6rem 0;
+  font-size: 1.9rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #0f172a;
+}
+
+/* ==========================================================================
+   OROLOGIO
+   ========================================================================== */
+
+.home-user-clock {
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%);
+  border: 1px solid #dbeafe;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.7);
+}
+
+.home-user-clock h3 {
+  margin: 0 0 0.45rem 0;
+  font-size: 1rem;
+  color: #1e3a8a;
+}
+
+.home-user-clock p {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+/* ===========================================================================
+   AZIONE PRIMARIA TIMBRATURA
+   ========================================================================== */
+
+.home-user-primary-action {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0 1.25rem;
+  border-radius: 18px;
+  padding: 1rem;
+  transition:
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.home-user-primary-action--clock-in,
+.home-user-primary-action--clock-out {
+  background: rgba(37, 99, 235, 0.08);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.12);
+}
+
+.home-user-primary-action--manual-fix {
+  background: rgba(245, 158, 11, 0.1);
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.14);
+}
+
+.home-user-primary-action--leave {
+  background: rgba(100, 116, 139, 0.1);
+}
+
+.home-user-primary-action--loading {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.home-user-primary-action .home-user-stamp-button {
+  width: 100%;
+  min-height: 54px;
+  font-size: 1.05rem;
+}
+
+.home-user-primary-action--clock-in .home-user-stamp-button,
+.home-user-primary-action--clock-out .home-user-stamp-button {
+  transform: scale(1.01);
+}
+
+.home-user-stamp-button {
+  width: 100%;
+  max-width: 360px;
+  font-size: 1.05rem;
+  padding: 0.9rem 1.25rem;
+}
+
+/* ===========================================================================
+   SUGGERIMENTI CONTESTUALI
+   ========================================================================== */
+
+.home-user-contextual-hint {
+  margin: 0.25rem 0 1rem;
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+  background: rgba(37, 99, 235, 0.08);
+  color: #1e3a8a;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.home-user-contextual-hint--leave {
+  margin-top: 0.75rem;
+  background: rgba(15, 23, 42, 0.05);
+  color: #334155;
+}
+
+/* ===========================================================================
+   MESSAGGI UI
+   ========================================================================== */
+
+.msg {
+  margin: 0 0 1rem 0;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  text-align: left;
+  box-shadow: 0 4px 10px rgba(17, 24, 39, 0.04);
+}
+
+.msg-ok {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #166534;
+}
+
+.msg-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.msg-warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+/* ==========================================================================
+   CARD / SEZIONI
+   ========================================================================== */
+
+.home-user-status-card {
+  margin-top: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+}
+
+.home-user-status-card h3 {
+  margin: 0 0 0.55rem 0;
+  font-size: 1.05rem;
+  color: #0f172a;
+}
+
+.home-user-day-summary {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.home-user-day-summary--success {
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.home-user-day-summary--warning {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.home-user-day-summary-label {
+  display: inline-block;
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.home-user-day-summary h3 {
+  margin: 0 0 0.35rem;
+  color: #0f172a;
+  font-size: 1.1rem;
+}
+
+.home-user-day-summary p {
+  margin: 0;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.home-user-day-summary small {
+  display: block;
+  margin-top: 0.45rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.home-user-loading {
+  margin: 0;
+  font-size: 0.98rem;
+  color: #64748b;
+}
+
+.home-user-muted-text {
+  color: #64748b;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0.25rem 0 1rem;
+}
+
+.home-user-helper-text {
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.35;
+  margin: 0.35rem 0 0;
+}
+
+/* ===========================================================================
+   CARD WARNING / ANOMALIE / MUTUA
+   ========================================================================== */
+
+.home-user-warning-card {
+  margin-top: 0.85rem;
+  padding: 1rem 1.1rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 14px;
+  box-shadow: 0 8px 18px rgba(245, 158, 11, 0.08);
+}
+
+.home-user-warning-card h3 {
+  margin: 0 0 0.55rem 0;
+  font-size: 1.05rem;
+  color: #92400e;
+}
+
+.home-user-warning-text {
+  margin: 0.35rem 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #78350f;
+}
+
+.home-user-warning-detail {
+  margin: 0.45rem 0 0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  color: #92400e;
+}
+
+/* ===========================================================================
+   FORM USER: RICHIESTA ASSENZA / CHIUSURA MANUALE
+   ========================================================================== */
+
+.home-user-manual-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.8rem;
+}
+
+.home-user-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.home-user-form-row label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.home-user-form-row input,
+.home-user-form-row select,
+.home-user-form-row textarea {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.95rem;
+  font-family: Arial, Helvetica, sans-serif;
+  padding: 0.75rem 0.85rem;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.home-user-form-row select {
+  cursor: pointer;
+}
+
+.home-user-form-row textarea {
+  resize: vertical;
+  min-height: 88px;
+}
+
+.home-user-form-row input:focus,
+.home-user-form-row select:focus,
+.home-user-form-row textarea:focus {
+  border-color: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.14);
+}
+
+.home-user-form-row input:disabled,
+.home-user-form-row select:disabled,
+.home-user-form-row textarea:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.home-user-manual-actions {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.35rem;
+}
+
+/* ===========================================================================
+   LISTA RICHIESTE ASSENZE USER
+   ========================================================================== */
+
+.home-user-leave-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.home-user-leave-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.8rem;
+  padding: 0.85rem 0.9rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.home-user-leave-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  color: #334155;
+  font-size: 0.92rem;
+  line-height: 1.4;
+}
+
+.home-user-leave-main strong {
+  color: #0f172a;
+  font-size: 0.93rem;
+}
+
+.home-user-leave-note {
+  color: #64748b;
+  font-size: 0.84rem;
+}
+
+.home-user-leave-status {
+  flex-shrink: 0;
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.leave-status-approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.leave-status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.leave-status-rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.leave-status-cancelled,
+.leave-status-neutral {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* ==========================================================================
+   AZIONI
+   ========================================================================== */
+
+.home-user-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+}
+
+/* ===========================================================================
+   BOTTONI BASE
+   ========================================================================== */
+
+.btn-primary,
+.btn-secondary,
+.btn-logout {
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.98rem;
+  padding: 0.9rem 1.15rem;
+  min-height: 46px;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    opacity 0.2s ease;
+}
+
+/* ===========================================================================
+   BOTTONE PRIMARIO
+   ========================================================================== */
+
+.btn-primary {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(22, 163, 74, 0.22);
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(22, 163, 74, 0.28);
+  filter: brightness(1.02);
+}
+
+/* ===========================================================================
+   BOTTONE SECONDARIO
+   ========================================================================== */
+
+.btn-secondary {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(245, 158, 11, 0.22);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(245, 158, 11, 0.28);
+  filter: brightness(1.02);
+}
+
+/* ===========================================================================
+   BOTTONE LOGOUT
+   ========================================================================== */
+
+.btn-logout {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 10px 18px rgba(239, 68, 68, 0.22);
+}
+
+.btn-logout:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 24px rgba(239, 68, 68, 0.28);
+  filter: brightness(1.02);
+}
+
+/* ===========================================================================
+   STATI ATTIVI / DISABLED
+   ========================================================================== */
+
+.btn-primary:active:not(:disabled),
+.btn-secondary:active:not(:disabled),
+.btn-logout:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-logout:disabled {
+  opacity: 0.68;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  filter: none;
+}
+
+/* ===========================================================================
+   MESSAGGIO LOGOUT
+   ========================================================================== */
+
+.logout-msg {
+  margin-top: 1rem;
+  text-align: center;
+  color: #15803d;
+  font-weight: 700;
+  font-size: 0.98rem;
+}
+
+/* ===========================================================================
+   DEMO INFO
+   ========================================================================== */
+
+.home-user-demo-info-card {
+  padding: 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 14px;
+  background: rgba(239, 246, 255, 0.95);
+  color: #1e3a8a;
+  text-align: left;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.home-user-demo-info-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.home-user-demo-info-card p {
+  margin: 0.25rem 0;
+  line-height: 1.45;
+}
+
+.home-user-demo-intro {
+  max-width: 42rem;
+  margin: 0.45rem auto 0;
+  color: #475569;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+/* ===========================================================================
+   ACCESSIBILITÀ
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-secondary,
+  .btn-logout,
+  .home-user-form-row input,
+  .home-user-form-row select,
+  .home-user-form-row textarea {
+    transition: none;
+  }
+}
+
+/* ===========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 640px) {
+  .home-user-container {
+    padding: 1rem;
+    align-items: center;
+  }
+
+  .home-user-box {
+    padding: 1.4rem;
+    border-radius: 16px;
+  }
+
+  .home-user-title {
+    font-size: 1.6rem;
+  }
+
+  .home-user-clock p {
+    font-size: 0.98rem;
+  }
+
+  .home-user-actions,
+  .home-user-manual-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .home-user-leave-item {
+    flex-direction: column;
+  }
+
+  .home-user-leave-status {
+    align-self: flex-start;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-logout {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .home-user-box {
+    padding: 1.1rem;
+  }
+
+  .home-user-title {
+    font-size: 1.4rem;
+  }
+
+  .msg,
+  .home-user-loading,
+  .home-user-warning-text,
+  .home-user-warning-detail,
+  .home-user-muted-text,
+  .home-user-leave-main {
+    font-size: 0.9rem;
+  }
+
+  .home-user-form-row input,
+  .home-user-form-row select,
+  .home-user-form-row textarea {
+    font-size: 0.9rem;
+  }
+}
+
+/* ==========================================================================
+   DEMO USER VISUAL POLISH
+   ========================================================================== */
+
+.home-user-box {
+  position: relative;
+  overflow: hidden;
+}
+
+.home-user-box::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 95% 4%, rgba(34, 197, 94, 0.12), transparent 24%),
+    radial-gradient(circle at 8% 18%, rgba(37, 99, 235, 0.1), transparent 28%);
+}
+
+.home-user-box > * {
+  position: relative;
+  z-index: 1;
+}
+
+.home-user-demo-intro {
+  display: inline-flex;
+  max-width: 760px;
+  margin-top: 0.8rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 999px;
+  background: rgba(239, 246, 255, 0.78);
+  color: #1e3a8a;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.home-user-clock {
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+}
+
+.home-user-day-summary {
+  position: relative;
+  overflow: hidden;
+  padding: 1.2rem 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.92));
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+.home-user-day-summary::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: #94a3b8;
+}
+
+.home-user-day-summary--success::before {
+  background: #16a34a;
+}
+
+.home-user-day-summary--warning::before {
+  background: #f59e0b;
+}
+
+.home-user-day-summary-label {
+  color: #2563eb;
+}
+
+.home-user-day-summary h3 {
+  font-size: 1.22rem;
+}
+
+.home-user-primary-action {
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.home-user-primary-action--clock-in,
+.home-user-primary-action--clock-out {
+  background:
+    radial-gradient(circle at top left, rgba(34, 197, 94, 0.16), transparent 32%),
+    linear-gradient(135deg, rgba(240, 253, 244, 0.96), rgba(255, 255, 255, 0.94));
+  box-shadow: 0 18px 38px rgba(22, 163, 74, 0.16);
+}
+
+.home-user-primary-action--manual-fix {
+  background:
+    radial-gradient(circle at top left, rgba(245, 158, 11, 0.16), transparent 32%),
+    linear-gradient(135deg, rgba(255, 251, 235, 0.96), rgba(255, 255, 255, 0.94));
+  border-color: rgba(245, 158, 11, 0.28);
+}
+
+.home-user-primary-action--leave,
+.home-user-primary-action--loading {
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(241, 245, 249, 0.92));
+}
+
+.home-user-contextual-hint {
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background:
+    linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.92));
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+}
+
+.home-user-contextual-hint--leave {
+  border-color: rgba(148, 163, 184, 0.26);
+  background:
+    linear-gradient(135deg, rgba(248, 250, 252, 0.98), rgba(255, 255, 255, 0.94));
+}
+
+.home-user-demo-info-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(37, 99, 235, 0.18);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 94% 10%, rgba(37, 99, 235, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(239, 246, 255, 0.96), rgba(255, 255, 255, 0.94));
+}
+
+.home-user-demo-info-card h3 {
+  color: #1d4ed8;
+}
+
+.home-user-status-card {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+}
+
+@media (max-width: 640px) {
+  .home-user-demo-intro {
+    display: block;
+    border-radius: 18px;
+    text-align: left;
+  }
+
+  .home-user-day-summary {
+    padding: 1rem 1rem 1rem 1.15rem;
+  }
+
+  .home-user-primary-action {
+    padding: 0.8rem;
+  }
+}
+
+/* ==========================================================================
+   DEMO USER COMPACT GUIDE
+   ========================================================================== */
+
+.home-user-demo-guide {
+  margin: -0.25rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(22, 163, 74, 0.16);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(240, 253, 244, 0.94), rgba(255, 255, 255, 0.92));
+  color: #14532d;
+  text-align: left;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
+.home-user-demo-guide-kicker {
+  display: inline-flex;
+  margin-bottom: 0.25rem;
+  color: #15803d;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-user-demo-guide p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .home-user-demo-guide {
+    padding: 0.85rem;
+  }
+
+  .home-user-demo-guide p {
+    font-size: 0.9rem;
+  }
+}

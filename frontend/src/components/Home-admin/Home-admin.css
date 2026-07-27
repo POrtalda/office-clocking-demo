@@ -1,0 +1,1471 @@
+/* ==========================================================================
+   HOME ADMIN - RESET LOCALE
+   ========================================================================== */
+
+.homeadmin-container *,
+.homeadmin-container *::before,
+.homeadmin-container *::after {
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   HOME ADMIN - LAYOUT GENERALE
+   ========================================================================== */
+
+.homeadmin-container {
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f3f4f6;
+  padding: 1.5rem;
+}
+
+.homeadmin-box {
+  width: 100%;
+  max-width: 1280px;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  padding: 1.5rem;
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+
+.homeadmin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.homeadmin-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.homeadmin-subtitle {
+  margin: 0.35rem 0 0;
+  color: #6b7280;
+  font-size: 0.98rem;
+}
+
+.homeadmin-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   BOTTONI
+   ========================================================================== */
+
+.homeadmin-btn {
+  border: none;
+  border-radius: 0.75rem;
+  padding: 0.72rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    opacity 0.15s ease,
+    background 0.15s ease;
+}
+
+.homeadmin-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.homeadmin-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.homeadmin-btn-primary {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.25);
+}
+
+.homeadmin-btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.homeadmin-btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.homeadmin-btn-secondary:hover:not(:disabled) {
+  background: #d1d5db;
+}
+
+.homeadmin-btn-success {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.homeadmin-btn-success:hover:not(:disabled) {
+  background: #15803d;
+}
+
+.homeadmin-btn-danger {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.homeadmin-btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.homeadmin-btn-sm {
+  padding: 0.55rem 0.8rem;
+  border-radius: 0.65rem;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   MESSAGGI / ALERT
+   ========================================================================== */
+
+.homeadmin-alert {
+  margin-bottom: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 0.85rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.homeadmin-alert.success {
+  background: #ecfdf5;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.homeadmin-alert.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.homeadmin-alert.warning {
+  background: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.homeadmin-error-text {
+  margin-top: 0.5rem;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.homeadmin-muted-text {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.94rem;
+}
+
+.homeadmin-loading-text {
+  color: #374151;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   CARD / SEZIONI
+   ========================================================================== */
+
+.homeadmin-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.homeadmin-card-primary {
+  position: relative;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(to bottom, #f8fbff 0%, #ffffff 72px, #ffffff 100%);
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.08);
+}
+
+.homeadmin-card-primary::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  background: #2563eb;
+}
+
+.homeadmin-card-primary .homeadmin-section-title {
+  font-size: 1.28rem;
+  margin-bottom: 1.1rem;
+}
+
+.homeadmin-card-primary .admin-section-title-row {
+  margin-bottom: 1.1rem;
+}
+
+.homeadmin-card-highlight {
+  animation: homeadminCardPulse 1.8s ease;
+}
+
+.homeadmin-empty-state {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+@keyframes homeadminCardPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    transform: translateY(0);
+  }
+  20% {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+    transform: translateY(-1px);
+  }
+  60% {
+    box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.1);
+    transform: translateY(0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    transform: translateY(0);
+  }
+}
+
+.homeadmin-section-title {
+  margin: 0 0 1rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.admin-section-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.admin-inline-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   GERARCHIA INTERNA SEZIONI ANALITICHE
+   ========================================================================== */
+
+.homeadmin-card .homeadmin-form {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.95rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.homeadmin-card .admin-inline-actions {
+  padding-top: 0.25rem;
+}
+
+.homeadmin-card .homeadmin-btn-primary {
+  min-width: 150px;
+}
+
+.homeadmin-card .homeadmin-stat-grid {
+  margin-top: 0.25rem;
+  margin-bottom: 1.15rem;
+}
+
+.homeadmin-card .homeadmin-stat-card {
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.homeadmin-results-block {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.homeadmin-results-block .homeadmin-stat-grid {
+  margin-bottom: 1.15rem;
+}
+
+.homeadmin-results-block-user {
+  border-top-color: #bfdbfe;
+}
+
+.homeadmin-results-block-user .homeadmin-stat-card:first-child {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.homeadmin-results-block-multi {
+  border-top-color: #d1d5db;
+}
+
+.homeadmin-results-block-multi .homeadmin-stat-card:first-child {
+  border-color: #d1d5db;
+  background: #f9fafb;
+}
+
+/* ==========================================================================
+   GRIGLIA PRINCIPALE DETTAGLIO GIORNALIERO
+   ========================================================================== */
+
+.homeadmin-grid {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.homeadmin-left-column,
+.homeadmin-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ==========================================================================
+   KPI / STATISTICHE
+   ========================================================================== */
+
+.homeadmin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.homeadmin-stat-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  padding: 0.9rem;
+}
+
+.homeadmin-stat-label {
+  margin: 0 0 0.35rem;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.homeadmin-stat-value {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #111827;
+  word-break: break-word;
+}
+
+/* ==========================================================================
+   FORM
+   ========================================================================== */
+
+.homeadmin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.homeadmin-form-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.homeadmin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.homeadmin-field label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.homeadmin-input,
+.homeadmin-select,
+.homeadmin-textarea {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.72rem 0.85rem;
+  font-size: 0.95rem;
+  background: #ffffff;
+  color: #111827;
+  min-width: 0;
+}
+
+.homeadmin-input:focus,
+.homeadmin-select:focus,
+.homeadmin-textarea:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.homeadmin-textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+/* ==========================================================================
+   TABELLE
+   ========================================================================== */
+
+.homeadmin-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.9rem;
+  background: #ffffff;
+}
+
+.homeadmin-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  background: #ffffff;
+}
+
+.homeadmin-table thead {
+  background: #f9fafb;
+}
+
+.homeadmin-table th,
+.homeadmin-table td {
+  padding: 0.9rem 0.85rem;
+  text-align: left;
+  font-size: 0.93rem;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: middle;
+}
+
+.homeadmin-table th {
+  color: #374151;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.homeadmin-table td {
+  color: #111827;
+}
+
+.homeadmin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.homeadmin-table tbody tr:hover {
+  background: #f9fafb;
+}
+
+.homeadmin-multi-detail-row td {
+  background: #f8fafc;
+  padding: 0.75rem;
+}
+
+.homeadmin-multi-detail-row:hover {
+  background: #f8fafc;
+}
+
+.homeadmin-nested-table {
+  min-width: 640px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.7rem;
+  overflow: hidden;
+}
+
+.homeadmin-nested-table th,
+.homeadmin-nested-table td {
+  padding: 0.7rem 0.75rem;
+  font-size: 0.88rem;
+}
+
+.homeadmin-table-empty {
+  padding: 1rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.homeadmin-table-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.homeadmin-table-actions .homeadmin-input {
+  min-width: 160px;
+  flex: 1 1 160px;
+}
+
+/* ==========================================================================
+   BADGE STATO
+   ========================================================================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.34rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+  border: 1px solid transparent;
+}
+
+.status-badge.success {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.status-badge.info {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.status-badge.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.status-badge.danger {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+.status-badge.neutral {
+  background: #f3f4f6;
+  color: #374151;
+  border-color: #e5e7eb;
+}
+
+/* ==========================================================================
+   BLOCCO RICHIESTE CHIUSURA MANUALE
+   ========================================================================== */
+
+.manual-requests-note {
+  margin: -0.35rem 0 1rem;
+  font-size: 0.92rem;
+  color: #6b7280;
+  line-height: 1.45;
+}
+
+.manual-request-user {
+  display: inline-block;
+  font-weight: 800;
+  color: #111827;
+}
+
+.manual-request-subtext {
+  display: block;
+  margin-top: 0.2rem;
+  color: #6b7280;
+  font-size: 0.84rem;
+}
+
+.manual-request-note {
+  max-width: 280px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #374151;
+  line-height: 1.4;
+}
+
+.manual-request-datetime {
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.manual-request-duration {
+  font-weight: 700;
+  color: #1f2937;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   LISTE / DETTAGLI
+   ========================================================================== */
+
+.homeadmin-detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.homeadmin-detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.homeadmin-detail-item:last-child {
+  border-bottom: none;
+}
+
+.homeadmin-detail-label {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.homeadmin-detail-value {
+  color: #111827;
+  font-weight: 700;
+  text-align: right;
+}
+
+/* ==========================================================================
+   CALENDARIO
+   ========================================================================== */
+
+.homeadmin-calendar-wrapper {
+  width: 100%;
+}
+
+.homeadmin-calendar-wrapper .react-calendar {
+  width: 100%;
+  border: none;
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #ffffff;
+  font-family: inherit;
+  box-shadow: inset 0 0 0 1px #e5e7eb;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__navigation {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__navigation button {
+  min-width: 44px;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+  border-radius: 0.6rem;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__navigation button:hover {
+  background: #f3f4f6;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__month-view__weekdays {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 800;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__month-view__weekdays__weekday {
+  padding: 0.45rem 0.25rem;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile {
+  border: none;
+  background: none;
+  border-radius: 0.7rem;
+  padding: 0.85rem 0.35rem;
+  font-size: 0.92rem;
+  position: relative;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile:hover {
+  background: #eff6ff;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile--now {
+  background: #fef3c7;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile--active {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile--active:hover {
+  background: #1d4ed8;
+}
+
+/* Giorni con assenza: stile finale pulito e ben visibile */
+.homeadmin-calendar-wrapper .calendar-day-has-leave {
+  background: rgba(220, 53, 69, 0.12) !important;
+  border: 1px solid rgba(220, 53, 69, 0.45) !important;
+  border-radius: 10px !important;
+  font-weight: 700 !important;
+  position: relative;
+}
+
+.homeadmin-calendar-wrapper .calendar-day-has-leave::after {
+  content: "";
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #dc3545;
+}
+
+/* Se il giorno con assenza è anche il giorno corrente */
+.homeadmin-calendar-wrapper .react-calendar__tile--now.calendar-day-has-leave {
+  background: linear-gradient(
+    to bottom,
+    #fef3c7 0%,
+    #fef3c7 58%,
+    rgba(220, 53, 69, 0.12) 100%
+  ) !important;
+}
+
+/* Se il giorno con assenza è anche selezionato */
+.homeadmin-calendar-wrapper .react-calendar__tile--active.calendar-day-has-leave {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+.homeadmin-calendar-wrapper .react-calendar__tile--active.calendar-day-has-leave::after {
+  background: #ffffff;
+}
+
+/* ==========================================================================
+   MODAL
+   ========================================================================== */
+
+.admin-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1000;
+}
+
+.admin-modal {
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.admin-modal-title {
+  margin: 0 0 12px 0;
+}
+
+.admin-modal-text {
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.admin-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   FOOTER ACTIONS
+   ========================================================================== */
+
+.homeadmin-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+
+@media (max-width: 1024px) {
+  .homeadmin-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .homeadmin-left-column,
+  .homeadmin-right-column {
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .homeadmin-container {
+    padding: 1rem;
+  }
+
+  .homeadmin-box {
+    padding: 1rem;
+  }
+
+  .homeadmin-title {
+    font-size: 1.6rem;
+  }
+
+  .homeadmin-form-row,
+  .homeadmin-stat-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .homeadmin-table {
+    min-width: 680px;
+  }
+}
+
+@media (max-width: 520px) {
+  .homeadmin-header {
+    align-items: stretch;
+  }
+
+  .homeadmin-header-actions,
+  .admin-inline-actions,
+  .homeadmin-table-actions,
+  .homeadmin-footer-actions {
+    width: 100%;
+  }
+
+  .homeadmin-btn,
+  .homeadmin-btn-sm {
+    width: 100%;
+  }
+
+  .homeadmin-footer-actions {
+    justify-content: stretch;
+  }
+
+  .homeadmin-detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .homeadmin-detail-value {
+    text-align: left;
+  }
+
+  .homeadmin-table-actions .homeadmin-input {
+    min-width: 100%;
+  }
+
+  .admin-modal {
+    padding: 20px;
+  }
+
+  .admin-modal-actions {
+    flex-direction: column;
+  }
+}
+
+/* ==========================================================================
+   DEMO PANEL
+   ========================================================================== */
+
+.homeadmin-demo-panel {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 32%),
+    linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+.homeadmin-demo-panel-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
+.homeadmin-demo-panel-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.homeadmin-demo-panel-kicker {
+  margin: 0 0 0.2rem;
+  color: #2563eb;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.homeadmin-demo-panel-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.homeadmin-demo-panel-text {
+  margin: 0 0 1rem;
+  color: #334155;
+  line-height: 1.55;
+}
+
+.homeadmin-demo-panel-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin-bottom: 1rem;
+}
+
+.homeadmin-demo-panel-grid span {
+  display: flex;
+  align-items: center;
+  min-height: 2.3rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.78);
+  color: #1e293b;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.homeadmin-demo-panel-note {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.72);
+  color: #475569;
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 900px) {
+  .homeadmin-demo-panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .homeadmin-demo-panel {
+    padding: 1rem;
+  }
+
+  .homeadmin-demo-panel-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .homeadmin-demo-panel-title {
+    font-size: 1.08rem;
+  }
+}
+
+.homeadmin-settings-card {
+  border-left: 4px solid #2563eb;
+}
+
+.homeadmin-settings-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.homeadmin-settings-form .homeadmin-field {
+  max-width: 260px;
+  margin-bottom: 0;
+}
+
+.homeadmin-settings-form input {
+  width: 100%;
+}
+
+.homeadmin-settings-form textarea {
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+}
+
+.homeadmin-settings-form .homeadmin-settings-emails-field {
+  max-width: 420px;
+  flex: 1 1 320px;
+}
+
+.homeadmin-settings-form small {
+  display: block;
+  margin-top: 0.35rem;
+  color: #64748b;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.homeadmin-quick-summary-card {
+  border: 1px solid rgba(37, 99, 235, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(37, 99, 235, 0.08),
+    rgba(255, 255, 255, 0.96)
+  );
+}
+
+.homeadmin-quick-summary-loading {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  background: rgba(37, 99, 235, 0.1);
+  color: #1d4ed8;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.homeadmin-quick-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1rem;
+}
+
+.homeadmin-quick-summary-item {
+  border-radius: 16px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.homeadmin-quick-summary-item--warning {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.homeadmin-quick-summary-label {
+  display: block;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.homeadmin-quick-summary-item strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: #0f172a;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.homeadmin-quick-summary-item small {
+  display: block;
+  margin-top: 0.45rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.homeadmin-contextual-hint {
+  margin: 0.75rem 0 0;
+  border-radius: 14px;
+  padding: 0.8rem 1rem;
+  background: rgba(15, 23, 42, 0.06);
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.homeadmin-quick-summary-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.homeadmin-quick-summary-item--button {
+  width: 100%;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+}
+
+.homeadmin-quick-summary-item--button:hover,
+.homeadmin-quick-summary-item--button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+.homeadmin-quick-summary-item--button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.35);
+  outline-offset: 3px;
+}
+
+.homeadmin-container {
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.16), transparent 32rem),
+    linear-gradient(135deg, #f8fbff 0%, #eef4fb 48%, #f9fbff 100%);
+}
+
+.homeadmin-box {
+  max-width: 1280px;
+}
+
+.homeadmin-demo-panel,
+.homeadmin-quick-summary-card {
+  border: 1px solid rgba(148, 163, 184, 0.32);
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.92));
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
+}
+
+.homeadmin-demo-panel-kicker {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.homeadmin-demo-panel-title {
+  margin-top: 0.85rem;
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  line-height: 1.1;
+  color: #0f172a;
+}
+
+.homeadmin-demo-panel-text {
+  max-width: 920px;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #1e293b;
+}
+
+.homeadmin-demo-panel-grid {
+  gap: 1.25rem;
+}
+
+.homeadmin-demo-panel-grid span {
+  display: flex;
+  align-items: center;
+  min-height: 72px;
+  padding: 1rem 1.15rem;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.homeadmin-demo-panel-note {
+  border: 1px solid rgba(37, 99, 235, 0.18);
+  border-radius: 16px;
+  background: rgba(239, 246, 255, 0.86);
+  color: #1e3a8a;
+}
+
+.homeadmin-quick-summary-grid {
+  align-items: stretch;
+}
+
+.homeadmin-quick-summary-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.25rem;
+  min-height: 142px;
+  padding: 1.35rem 1.4rem;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.homeadmin-quick-summary-item strong {
+  margin-top: 0.8rem;
+  font-size: 2.25rem;
+  line-height: 1;
+  color: #020617;
+}
+
+.homeadmin-quick-summary-item small {
+  margin-top: 0.65rem;
+  font-size: 0.98rem;
+  line-height: 1.35;
+}
+
+.homeadmin-quick-summary-label {
+  font-size: 0.95rem;
+  font-weight: 800;
+}
+
+.homeadmin-quick-summary-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  font-size: 1.55rem;
+}
+
+.homeadmin-quick-summary-icon--blue {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.homeadmin-quick-summary-icon--gray {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.homeadmin-quick-summary-icon--orange {
+  background: #ffedd5;
+  color: #ea580c;
+}
+
+.homeadmin-quick-summary-icon--green {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.homeadmin-quick-summary-item--button:hover .homeadmin-quick-summary-icon,
+.homeadmin-quick-summary-item--button:focus-visible .homeadmin-quick-summary-icon {
+  transform: scale(1.04);
+}
+
+.homeadmin-contextual-hint {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid rgba(37, 99, 235, 0.18);
+}
+
+/* ==========================================================================
+   DEMO VISUAL POLISH
+   ========================================================================== */
+
+.homeadmin-demo-panel {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(1.25rem, 2.5vw, 2rem);
+}
+
+.homeadmin-demo-panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 92% 8%, rgba(37, 99, 235, 0.16), transparent 28%),
+    radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.12), transparent 30%);
+}
+
+.homeadmin-demo-panel > * {
+  position: relative;
+  z-index: 1;
+}
+
+.homeadmin-demo-panel-header {
+  align-items: center;
+}
+
+.homeadmin-demo-panel-icon {
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.homeadmin-demo-panel-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.homeadmin-demo-panel-grid span {
+  position: relative;
+  min-height: 3.25rem;
+  padding-left: 2.35rem;
+}
+
+.homeadmin-demo-panel-grid span::before {
+  content: "✓";
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 999px;
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.homeadmin-quick-summary-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.homeadmin-quick-summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 26%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(239, 246, 255, 0.72));
+}
+
+.homeadmin-quick-summary-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.homeadmin-quick-summary-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.homeadmin-quick-summary-item {
+  border: 1px solid rgba(226, 232, 240, 0.92);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.homeadmin-quick-summary-item--warning {
+  border-color: rgba(245, 158, 11, 0.28);
+  background:
+    linear-gradient(135deg, rgba(255, 247, 237, 0.96), rgba(255, 255, 255, 0.94));
+}
+
+.homeadmin-quick-summary-item--button:hover,
+.homeadmin-quick-summary-item--button:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.14);
+}
+
+.homeadmin-contextual-hint {
+  max-width: 860px;
+}
+
+@media (max-width: 640px) {
+  .homeadmin-demo-panel-header {
+    align-items: flex-start;
+  }
+
+  .homeadmin-demo-panel-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 0.72rem;
+  }
+
+  .homeadmin-demo-panel-grid span {
+    min-height: 3rem;
+  }
+
+  .homeadmin-quick-summary-item {
+    min-height: auto;
+  }
+}
+
+/* ==========================================================================
+   DEMO ADMIN COMPACT GUIDE
+   ========================================================================== */
+
+.homeadmin-demo-guide {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: -0.35rem 0 1.25rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(37, 99, 235, 0.16);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(239, 246, 255, 0.92), rgba(255, 255, 255, 0.9));
+  color: #1e3a8a;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.07);
+}
+
+.homeadmin-demo-guide-kicker {
+  display: inline-flex;
+  margin-bottom: 0.25rem;
+  color: #1d4ed8;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.homeadmin-demo-guide p {
+  margin: 0;
+  color: #334155;
+  font-size: 0.95rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+  .homeadmin-demo-guide {
+    align-items: flex-start;
+    margin-top: -0.2rem;
+    padding: 0.85rem;
+  }
+
+  .homeadmin-demo-guide p {
+    font-size: 0.9rem;
+  }
+}
