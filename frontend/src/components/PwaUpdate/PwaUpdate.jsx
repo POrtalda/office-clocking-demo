@@ -8,6 +8,17 @@ export default function PwaUpdate() {
   } = useRegisterSW({
     immediate: true,
 
+    onRegisteredSW(swScriptUrl, registration) {
+      if (!registration) {
+        return;
+      }
+
+      // Controlla subito se esiste una nuova versione quando l'app viene aperta.
+      registration.update().catch((error) => {
+        console.error("Errore controllo aggiornamento PWA:", error);
+      });
+    },
+
     onRegisterError(error) {
       console.error("Errore registrazione service worker:", error);
     },
