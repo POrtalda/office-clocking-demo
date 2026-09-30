@@ -39,6 +39,14 @@ const leaveRequestSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    startTime: {
+      type: String,
+      default: null,
+    },
+    endTime: {
+      type: String,
+      default: null,
+    },
     note: {
       type: String,
       trim: true,

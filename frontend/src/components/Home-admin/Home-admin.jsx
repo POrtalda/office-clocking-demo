@@ -562,6 +562,17 @@ export default function Home_admin() {
     const startLabel = formatDateIT(startDate);
     const endLabel = endDate ? formatDateIT(endDate) : "";
 
+    if (
+      leave?.type === "pir" &&
+      leave?.hours != null &&
+      leave?.startTime &&
+      leave?.endTime
+    ) {
+      const hoursLabel = `${leave.hours} ${leave.hours === 1 ? "ora" : "ore"}`;
+
+      return `${startLabel} · ${leave.startTime}–${leave.endTime} · ${hoursLabel}`;
+    }
+
     if (!endLabel || startLabel === endLabel) {
       return startLabel;
     }

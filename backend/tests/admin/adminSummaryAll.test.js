@@ -551,4 +551,63 @@ describe("GET /api/admin/summary-all", () => {
       absenceDays: 1,
     });
   });
+  it("non conteggia un PIR orario come giornata intera nel riepilogo multiutente", async () => {
+    const usersFromDb = [
+      {
+        _id: "user-mario",
+        username: "mario",
+        role: "user",
+        fullName: "Mario Rossi",
+      },
+    ];
+
+    const leanUsersMock = jest.fn().mockResolvedValue(usersFromDb);
+    const sortUsersMock = jest
+      .fn()
+      .mockReturnValue({ lean: leanUsersMock });
+    const selectUsersMock = jest
+      .fn()
+      .mockReturnValue({ sort: sortUsersMock });
+
+    User.find.mockReturnValue({
+      select: selectUsersMock,
+    });
+
+    const leanRecordsMock = jest.fn().mockResolvedValue([]);
+    const sortRecordsMock = jest
+      .fn()
+      .mockReturnValue({ lean: leanRecordsMock });
+
+    TimeRecord.find.mockReturnValue({
+      sort: sortRecordsMock,
+    });
+
+    mockLeaveRequestFind([
+      {
+        _id: "leave-pir-hourly",
+        user: "user-mario",
+        type: "pir",
+        status: "approved",
+        date: new Date("2026-03-13T00:00:00.000Z"),
+        hours: 2,
+        startTime: "14:00",
+        endTime: "16:00",
+      },
+    ]);
+
+    const response = await request(app)
+      .get("/api/admin/summary-all?from=2026-03-01&to=2026-03-31")
+      .set("Authorization", "Bearer fake-admin-token");
+
+    expect(response.status).toBe(200);
+
+    const marioRow = response.body.rows.find(
+      (row) => row.username === "mario"
+    );
+
+    expect(marioRow).toMatchObject({
+      pir: 0,
+      absenceDays: 0,
+    });
+  });
 });

@@ -8,11 +8,13 @@ const {
   dayjs,
   APP_TZ,
   buildSingleDayClockInFilter,
+  parseAppDateTimeToDate,
 } = require("../utils/dateTime");
 
 const {
   validateSingleDate,
   validateDateRange,
+  validateTimeString,
 } = require("../utils/validators");
 
 function formatDateIT(date) {
@@ -30,6 +32,23 @@ function formatDateIT(date) {
 }
 
 function getLeavePeriodLabel(leave) {
+  if (
+    leave?.type === "pir" &&
+    leave?.hours != null &&
+    leave?.startTime &&
+    leave?.endTime
+  ) {
+    const dateSource = leave.date || leave.startDate;
+
+    if (!dateSource) {
+      return "-";
+    }
+
+    const hoursLabel = `${leave.hours} ${leave.hours === 1 ? "ora" : "ore"}`;
+
+    return `${formatDateIT(dateSource)}, ${leave.startTime}-${leave.endTime} (${hoursLabel})`;
+  }
+
   if (leave?.startDate && leave?.endDate) {
     return `dal ${formatDateIT(leave.startDate)} al ${formatDateIT(
       leave.endDate
@@ -477,14 +496,119 @@ async function createPirRequest(req, res, next) {
     const userId = req.user.id;
     const note = typeof req.body?.note === "string" ? req.body.note.trim() : "";
     const dateStr = req.body?.date;
+    const startTime = req.body?.startTime;
+    const rawHours = req.body?.hours;
 
-    const leave = await createDailyLeave({
-      userId,
-      user: req.user,
+    // Nessuna durata/orario specificati:
+    // manteniamo il PIR giornaliero già esistente.
+    if (rawHours == null && !startTime) {
+      const leave = await createDailyLeave({
+        userId,
+        user: req.user,
+        type: "pir",
+        status: "pending",
+        note,
+        dateStr,
+      });
+
+      return res.status(201).json({
+        message: "Richiesta PIR inviata con successo.",
+        leave,
+      });
+    }
+
+    validateSingleDate(dateStr);
+
+    const hours = Number(rawHours);
+
+    if (!Number.isInteger(hours) || hours < 1 || hours > 8) {
+      throw new AppError(
+        "Le ore PIR devono essere un numero intero compreso tra 1 e 8.",
+        400,
+        "INVALID_PIR_HOURS"
+      );
+    }
+
+    const timeValidation = validateTimeString(startTime, "startTime");
+
+    if (!timeValidation.ok) {
+      throw new AppError(
+        timeValidation.message,
+        400,
+        "INVALID_PIR_START_TIME"
+      );
+    }
+
+    await ensureLeaveRespectsMinAdvance(dateStr);
+
+    const leavePeriod = buildLeavePeriod(dateStr, dateStr);
+
+    const existingActiveLeave = await LeaveRequest.findOne({
+      user: userId,
+      status: { $in: ["approved", "pending"] },
+      $or: [
+        {
+          startDate: { $lte: leavePeriod.endDate },
+          endDate: { $gte: leavePeriod.startDate },
+        },
+        {
+          date: {
+            $gte: leavePeriod.startDate,
+            $lte: leavePeriod.endDate,
+          },
+        },
+      ],
+    });
+
+    if (existingActiveLeave) {
+      throw new AppError(
+        `Hai gia inserito un'assenza per il giorno selezionato (${getLeaveTypeLabel(
+          existingActiveLeave.type
+        )}).`,
+        409,
+        "LEAVE_ALREADY_PRESENT"
+      );
+    }
+
+    const parsedStartDateTime = parseAppDateTimeToDate(dateStr, startTime);
+
+    if (!parsedStartDateTime) {
+      throw new AppError(
+        "Data o orario di inizio PIR non validi.",
+        400,
+        "INVALID_PIR_START_TIME"
+      );
+    }
+
+    const startDateTime = dayjs(parsedStartDateTime).tz(APP_TZ);
+    const endDateTime = startDateTime.add(hours, "hour");
+
+    if (!endDateTime.isSame(startDateTime, "day")) {
+      throw new AppError(
+        "Il PIR orario deve iniziare e terminare nella stessa giornata.",
+        400,
+        "INVALID_PIR_TIME_RANGE"
+      );
+    }
+
+    const endTime = endDateTime.format("HH:mm");
+
+    const leave = await LeaveRequest.create({
+      user: userId,
       type: "pir",
       status: "pending",
+      date: leavePeriod.date,
+      startDate: leavePeriod.startDate,
+      endDate: leavePeriod.endDate,
+      hours,
+      startTime,
+      endTime,
       note,
-      dateStr,
+    });
+
+    scheduleLeaveRequestNotification({
+      user: req.user,
+      leave,
     });
 
     return res.status(201).json({
