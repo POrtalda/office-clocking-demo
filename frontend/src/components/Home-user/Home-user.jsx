@@ -1252,12 +1252,14 @@ export default function Home_user() {
           )}
         </div>
 
-        <div className="home-user-clock">
+        <div className="home-user-clock home-user-card--clock">
           <h3>Orologio</h3>
           <p>{formatDateTimeIT(currentTime)}</p>
         </div>
 
-        <div className={`home-user-day-summary home-user-day-summary--${daySummary.tone}`}>
+        <div
+          className={`home-user-day-summary home-user-card--day-summary home-user-day-summary--${daySummary.tone}`}
+        >
           <div>
             <span className="home-user-day-summary-label">Riepilogo giornata</span>
             <h3>{daySummary.title}</h3>
@@ -1325,7 +1327,7 @@ export default function Home_user() {
             </p>
           </div>
         )}
-        <div className="home-user-status-card">
+        <div className="home-user-status-card home-user-card--leave-request">
           <h3>Richiedi assenza</h3>
 
           <p className="home-user-muted-text">
@@ -1503,7 +1505,7 @@ export default function Home_user() {
           </div>
         </div>
 
-        <div className="home-user-status-card">
+        <div className="home-user-status-card home-user-card--leave-history">
           <h3>Le tue richieste assenze</h3>
 
           {loadingUserLeaves ? (
