@@ -258,6 +258,130 @@
   line-height: 1.4;
 }
 
+/* ==========================================================================
+   IDENTITA VISIVA SEZIONI USER
+   ========================================================================== */
+
+.home-user-card--clock,
+.home-user-card--day-summary,
+.home-user-card--leave-request,
+.home-user-card--leave-history {
+  position: relative;
+  overflow: hidden;
+  border-width: 2px;
+  border-style: solid;
+  border-radius: 1.1rem;
+  box-shadow:
+    0 12px 28px rgba(15, 23, 42, 0.08),
+    0 3px 8px rgba(15, 23, 42, 0.05);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+/* Barra superiore comune */
+.home-user-card--clock::before,
+.home-user-card--day-summary::before,
+.home-user-card--leave-request::before,
+.home-user-card--leave-history::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 7px;
+}
+
+/* Orologio */
+.home-user-card--clock {
+  border-color: #bfdbfe;
+  background: linear-gradient(180deg,
+      #eff6ff 0%,
+      #ffffff 105px,
+      #ffffff 100%);
+}
+
+.home-user-card--clock::before {
+  background: #2563eb;
+}
+
+/* Riepilogo giornata */
+.home-user-card--day-summary {
+  border-color: #bbf7d0;
+}
+
+.home-user-card--day-summary::before {
+  background: #16a34a;
+}
+
+/* Richiedi assenza */
+.home-user-card--leave-request {
+  border-color: #fed7aa;
+  background: linear-gradient(180deg,
+      #fff7ed 0%,
+      #ffffff 105px,
+      #ffffff 100%);
+}
+
+.home-user-card--leave-request::before {
+  background: #f97316;
+}
+
+/* Storico richieste */
+.home-user-card--leave-history {
+  border-color: #ddd6fe;
+  background: linear-gradient(180deg,
+      #f5f3ff 0%,
+      #ffffff 105px,
+      #ffffff 100%);
+}
+
+.home-user-card--leave-history::before {
+  background: #7c3aed;
+}
+
+/* Titoli più evidenti */
+.home-user-card--clock h3,
+.home-user-card--leave-request>h3,
+.home-user-card--leave-history>h3 {
+  font-size: 1.45rem;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+/* Etichetta Riepilogo giornata più grande */
+.home-user-card--day-summary .home-user-day-summary-label {
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+/* Titolo dinamico del riepilogo */
+.home-user-card--day-summary h3 {
+  font-size: 1.35rem;
+  font-weight: 900;
+}
+
+/* Più respiro tra i blocchi */
+.home-user-card--clock,
+.home-user-card--day-summary,
+.home-user-card--leave-request,
+.home-user-card--leave-history {
+  margin-bottom: 1.4rem;
+}
+
+/* Hover */
+.home-user-card--clock:hover,
+.home-user-card--day-summary:hover,
+.home-user-card--leave-request:hover,
+.home-user-card--leave-history:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 20px 40px rgba(15, 23, 42, 0.13),
+    0 6px 14px rgba(15, 23, 42, 0.06);
+}
+
 .home-user-loading {
   margin: 0;
   font-size: 0.98rem;
@@ -610,6 +734,7 @@
    ========================================================================== */
 
 @media (prefers-reduced-motion: reduce) {
+
   .btn-primary,
   .btn-secondary,
   .btn-logout,
@@ -708,7 +833,7 @@
     radial-gradient(circle at 8% 18%, rgba(37, 99, 235, 0.1), transparent 28%);
 }
 
-.home-user-box > * {
+.home-user-box>* {
   position: relative;
   z-index: 1;
 }
