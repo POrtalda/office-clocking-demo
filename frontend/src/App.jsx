@@ -34,6 +34,7 @@ function App() {
 
   // Evita doppi submit mentre la richiesta è in corso
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSlowLoading, setShowSlowLoading] = useState(false);
 
   const [demoAccounts, setDemoAccounts] = useState([]);
   const [demoAccountsLoading, setDemoAccountsLoading] = useState(false);
@@ -294,6 +295,21 @@ function App() {
     setSessionMessage("");
   }, [username, password, setSessionMessage]);
 
+  useEffect(() => {
+    const isWaitingForServer = isSubmitting || demoAccountsLoading;
+
+    if (!isWaitingForServer) {
+      setShowSlowLoading(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setShowSlowLoading(true);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [isSubmitting, demoAccountsLoading]);
+
   // =========================
   // SUBMIT LOGIN
   // =========================
@@ -354,6 +370,25 @@ function App() {
   return (
     <>
       <div className="login-page">
+        {showSlowLoading && (
+          <div className="demo-loading-overlay">
+            <div className="demo-loading-card">
+              <div className="demo-loading-spinner" aria-hidden="true" />
+
+              <strong>Caricamento</strong>
+
+              <div className="demo-loading-dots" aria-hidden="true">
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </div>
+
+              <p>
+                Il server demo si sta avviando. Attendi qualche secondo...
+              </p>
+            </div>
+          </div>
+        )}
         <div className="login-card">
           <div className="login-header">
             <h1 className="login-title">Office Clocking</h1>
@@ -426,11 +461,10 @@ function App() {
                     <button
                       key={account.username}
                       type="button"
-                      className={`login-demo-button${
-                        account.featured
-                          ? " login-demo-button-featured"
-                          : ""
-                      }`}
+                      className={`login-demo-button${account.featured
+                        ? " login-demo-button-featured"
+                        : ""
+                        }`}
                       onClick={() =>
                         fillDemoCredentials(account)
                       }
@@ -447,11 +481,10 @@ function App() {
                           </strong>
 
                           <span
-                            className={`login-demo-role-badge${
-                              account.featured
-                                ? " login-demo-role-badge-featured"
-                                : ""
-                            }`}
+                            className={`login-demo-role-badge${account.featured
+                              ? " login-demo-role-badge-featured"
+                              : ""
+                              }`}
                           >
                             {account.roleLabel}
                           </span>
@@ -526,8 +559,8 @@ function App() {
             >
               {isBlocked
                 ? `Attendi ${formatCountdown(
-                    retryAfterSec
-                  )}`
+                  retryAfterSec
+                )}`
                 : isSubmitting
                   ? "Accesso in corso..."
                   : "Accedi"}
