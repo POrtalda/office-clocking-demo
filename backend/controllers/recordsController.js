@@ -97,8 +97,18 @@ async function findApprovedLeaveForToday(userId) {
 
   return LeaveRequest.findOne({
     user: userId,
-    type: { $in: ["mutua", "ferie", "pir"] },
     status: "approved",
+    $and: [
+      {
+        $or: [
+          { type: { $in: ["mutua", "ferie"] } },
+          {
+            type: "pir",
+            hours: null,
+          },
+        ],
+      },
+    ],
     $or: [
       {
         startDate: { $lte: endOfDay },
@@ -267,7 +277,7 @@ async function clockIn(req, res, next) {
       return next(
         new AppError(
           errorMessages[locationValidation.code] ||
-            "Posizione non valida: impossibile registrare l'entrata",
+          "Posizione non valida: impossibile registrare l'entrata",
           400,
           locationValidation.code
         )
@@ -393,7 +403,7 @@ async function clockOut(req, res, next) {
       return next(
         new AppError(
           errorMessages[locationValidation.code] ||
-            "Posizione non valida: impossibile registrare l'uscita",
+          "Posizione non valida: impossibile registrare l'uscita",
           400,
           locationValidation.code
         )

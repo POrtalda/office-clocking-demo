@@ -134,7 +134,7 @@ describe("GET /api/admin/summary", () => {
       .get("/api/admin/summary?username=mario&from=2026-03-01&to=2026-03-31")
       .set("Authorization", "Bearer fake-admin-token");
 
-      
+
     expect(response.status).toBe(200);
 
     expect(response.body).toMatchObject({
@@ -415,10 +415,43 @@ describe("GET /api/admin/summary", () => {
         {
           date: {
             $gte: new Date("2026-03-01T00:00:00.000Z"),
-           $lt: new Date("2026-04-01T00:00:00.000Z"),
+            $lt: new Date("2026-04-01T00:00:00.000Z"),
           },
         },
       ],
+    });
+  });
+  it("non conteggia un PIR orario come giornata intera di assenza", async () => {
+    mockUserFindOne({
+      _id: "user-mario",
+      username: "mario",
+      role: "user",
+    });
+
+    mockTimeRecordFind([]);
+
+    mockLeaveRequestFind([
+      {
+        _id: "leave-pir-hourly",
+        user: "user-mario",
+        type: "pir",
+        status: "approved",
+        date: new Date("2026-03-13T00:00:00.000Z"),
+        hours: 2,
+        startTime: "14:00",
+        endTime: "16:00",
+      },
+    ]);
+
+    const response = await request(app)
+      .get("/api/admin/summary?username=mario&from=2026-03-01&to=2026-03-31")
+      .set("Authorization", "Bearer fake-admin-token");
+
+    expect(response.status).toBe(200);
+
+    expect(response.body).toMatchObject({
+      pir: 0,
+      absenceDays: 0,
     });
   });
 });

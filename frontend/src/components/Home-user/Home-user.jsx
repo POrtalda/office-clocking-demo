@@ -144,6 +144,9 @@ export default function Home_user() {
   );
   const [leaveEndDate, setLeaveEndDate] = useState(() => toRomeYMD(new Date()));
   const [leaveNote, setLeaveNote] = useState("");
+  const [pirMode, setPirMode] = useState("fullDay");
+  const [pirStartTime, setPirStartTime] = useState("");
+  const [pirHours, setPirHours] = useState(1);
   const [leaveRequestLoading, setLeaveRequestLoading] = useState(false);
   const feedbackMessageRef = useRef(null);
 
@@ -161,7 +164,13 @@ export default function Home_user() {
   const [leaveMinAdvanceDays, setLeaveMinAdvanceDays] = useState(null);
 
   const hasTodayApprovedLeave = useMemo(() => {
-    return String(todayLeave?.status || "").toLowerCase() === "approved";
+    const isApproved =
+      String(todayLeave?.status || "").toLowerCase() === "approved";
+
+    const isHourlyPir =
+      todayLeave?.type === "pir" && todayLeave?.hours != null;
+
+    return isApproved && !isHourlyPir;
   }, [todayLeave]);
 
   const todayLeaveLabel = useMemo(() => {
@@ -290,7 +299,7 @@ export default function Home_user() {
     }
 
     if (leaveType === "pir") {
-      return "Il PIR richiede approvazione admin e viene gestito come richiesta giornaliera.";
+      return "Il PIR richiede approvazione admin e può essere richiesto per l'intera giornata oppure per un numero specifico di ore.";
     }
 
     return selectedLeaveOption?.description || "Seleziona il tipo di assenza da richiedere.";
@@ -983,6 +992,15 @@ export default function Home_user() {
     if (leaveRequestLoading || isStamping) return;
 
     const isFerieRange = leaveType === "ferie";
+    const isHourlyPir = leaveType === "pir" && pirMode === "hourly";
+
+    if (isHourlyPir && !pirStartTime) {
+      setLeaveRequestFeedback({
+        type: "warning",
+        text: "Seleziona l'orario di inizio del PIR.",
+      });
+      return;
+    }
 
     if (!leaveType || !leaveStartDate || (isFerieRange && !leaveEndDate)) {
       setLeaveRequestFeedback({
@@ -1038,10 +1056,17 @@ export default function Home_user() {
                 endDate: leaveEndDate,
                 note: leaveNote.trim(),
               }
-              : {
-                date: leaveType === "mutua" ? toRomeYMD(new Date()) : leaveStartDate,
-                note: leaveNote.trim(),
-              }
+              : isHourlyPir
+                ? {
+                  date: leaveStartDate,
+                  startTime: pirStartTime,
+                  hours: pirHours,
+                  note: leaveNote.trim(),
+                }
+                : {
+                  date: leaveType === "mutua" ? toRomeYMD(new Date()) : leaveStartDate,
+                  note: leaveNote.trim(),
+                }
           ),
         },
         { handleSessionExpired, navigate }
@@ -1343,6 +1368,28 @@ export default function Home_user() {
               )}
             </div>
 
+
+            {leaveType === "pir" && (
+              <div className="home-user-form-row">
+                <label htmlFor="pir-mode">Tipo di PIR</label>
+
+                <select
+                  id="pir-mode"
+                  value={pirMode}
+                  onChange={(e) => setPirMode(e.target.value)}
+                  disabled={leaveRequestLoading || isStamping}
+                >
+                  <option value="fullDay">Giornata intera</option>
+                  <option value="hourly">Permesso a ore</option>
+                </select>
+
+                <p className="home-user-helper-text">
+                  Puoi richiedere il PIR per l'intera giornata oppure per un numero
+                  specifico di ore.
+                </p>
+              </div>
+            )}
+
             <div className="home-user-form-row">
               <label htmlFor="leave-start-date">
                 {leaveType === "ferie" ? "Data inizio ferie" : "Data assenza"}
@@ -1368,6 +1415,41 @@ export default function Home_user() {
                 </p>
               )}
             </div>
+
+            {leaveType === "pir" && pirMode === "hourly" && (
+              <>
+                <div className="home-user-form-row">
+                  <label htmlFor="pir-start-time">Ora di inizio</label>
+                  <input
+                    id="pir-start-time"
+                    type="time"
+                    value={pirStartTime}
+                    onChange={(e) => setPirStartTime(e.target.value)}
+                    disabled={leaveRequestLoading || isStamping}
+                  />
+                </div>
+
+                <div className="home-user-form-row">
+                  <label htmlFor="pir-hours">Durata PIR</label>
+                  <select
+                    id="pir-hours"
+                    value={pirHours}
+                    onChange={(e) => setPirHours(Number(e.target.value))}
+                    disabled={leaveRequestLoading || isStamping}
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
+                      <option key={hours} value={hours}>
+                        {hours} {hours === 1 ? "ora" : "ore"}
+                      </option>
+                    ))}
+                  </select>
+
+                  <p className="home-user-helper-text">
+                    Seleziona l'orario di inizio e la durata del permesso.
+                  </p>
+                </div>
+              </>
+            )}
 
             {leaveType === "ferie" && (
               <div className="home-user-form-row">
@@ -1444,7 +1526,10 @@ export default function Home_user() {
 
                       {leave.type === "pir" && leave.hours != null && (
                         <span className="home-user-leave-note">
-                          Ore PIR: {leave.hours}
+                          PIR: {leave.hours} {leave.hours === 1 ? "ora" : "ore"}
+                          {leave.startTime && leave.endTime
+                            ? ` · ${leave.startTime}–${leave.endTime}`
+                            : ""}
                         </span>
                       )}
 
@@ -1499,6 +1584,19 @@ export default function Home_user() {
             <p className="home-user-warning-detail">
               Data: <strong>{formatDateIT(new Date(todayLeave.date))}</strong>
             </p>
+
+            {todayLeave.type === "pir" &&
+              todayLeave.hours != null &&
+              todayLeave.startTime &&
+              todayLeave.endTime && (
+                <p className="home-user-warning-detail">
+                  Orario:{" "}
+                  <strong>
+                    {todayLeave.startTime}–{todayLeave.endTime} · {todayLeave.hours}{" "}
+                    {todayLeave.hours === 1 ? "ora" : "ore"}
+                  </strong>
+                </p>
+              )}
 
             {todayLeave.note && (
               <p className="home-user-warning-detail">

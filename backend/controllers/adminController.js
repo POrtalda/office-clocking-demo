@@ -424,9 +424,8 @@ async function updateUserGeolocationStatus(req, res, next) {
     await userToUpdate.save();
 
     return res.status(200).json({
-      message: `Geolocalizzazione ${
-        geolocationEnabled ? "attivata" : "disattivata"
-      } per l'utente`,
+      message: `Geolocalizzazione ${geolocationEnabled ? "attivata" : "disattivata"
+        } per l'utente`,
       user: toAdminUserResponse(userToUpdate),
     });
   } catch (err) {
@@ -1043,19 +1042,27 @@ async function approveLeaveRequest(req, res, next) {
       );
     }
 
-    const existingTimeRecord = await TimeRecord.findOne({
-      user: leave.user,
-      clockIn: { $gte: start, $lte: end },
-    });
+    const isHourlyPir =
+      leave.type === "pir" &&
+      leave.hours != null &&
+      leave.startTime &&
+      leave.endTime;
 
-    if (existingTimeRecord) {
-      return next(
-        new AppError(
-          "Non puoi approvare questa assenza: esiste gia una timbratura nello stesso giorno.",
-          409,
-          "TIMERECORD_ALREADY_PRESENT"
-        )
-      );
+    if (!isHourlyPir) {
+      const existingTimeRecord = await TimeRecord.findOne({
+        user: leave.user,
+        clockIn: { $gte: start, $lte: end },
+      });
+
+      if (existingTimeRecord) {
+        return next(
+          new AppError(
+            "Non puoi approvare questa assenza: esiste gia una timbratura nello stesso giorno.",
+            409,
+            "TIMERECORD_ALREADY_PRESENT"
+          )
+        );
+      }
     }
 
     leave.status = "approved";
@@ -1489,8 +1496,7 @@ async function exportRecordsCsv(req, res, next) {
       "Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="office-clocking_ALL_${fromStr}_to_${toStr}${
-        usernameNormalized ? `_user-${usernameNormalized}` : ""
+      `attachment; filename="office-clocking_ALL_${fromStr}_to_${toStr}${usernameNormalized ? `_user-${usernameNormalized}` : ""
       }.csv"`
     );
 
@@ -1578,7 +1584,7 @@ async function getUserSummary(req, res, next) {
         },
       ],
     })
-      .select("type date startDate endDate status")
+      .select("type date startDate endDate status hours")
       .sort({ startDate: 1, date: 1, createdAt: 1 })
       .lean();
 
@@ -1588,6 +1594,12 @@ async function getUserSummary(req, res, next) {
     const absenceDaysSet = new Set();
 
     for (const leave of approvedLeaves) {
+      const isHourlyPir = leave.type === "pir" && leave.hours != null;
+
+      if (isHourlyPir) {
+        continue;
+      }
+
       const leaveDays = getLeaveDaysInRange(leave, start, nextDayStart);
 
       for (const localDay of leaveDays) {
@@ -1751,7 +1763,7 @@ async function getSummaryAll(req, res, next) {
         },
       ],
     })
-      .select("user type date startDate endDate status")
+      .select("user type date startDate endDate status hours")
       .sort({ startDate: 1, date: 1, createdAt: 1 })
       .lean();
 
@@ -1760,6 +1772,12 @@ async function getSummaryAll(req, res, next) {
       const bucket = usersMap.get(userId);
 
       if (!bucket) continue;
+
+      const isHourlyPir = leave.type === "pir" && leave.hours != null;
+
+      if (isHourlyPir) {
+        continue;
+      }
 
       const leaveDays = getLeaveDaysInRange(leave, start, nextDayStart);
 
