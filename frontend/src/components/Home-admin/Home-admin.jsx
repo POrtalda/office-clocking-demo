@@ -1852,7 +1852,7 @@ export default function Home_admin() {
           </section>
         )}
 
-        <section className="homeadmin-card homeadmin-quick-summary-card">
+        <section className="homeadmin-card homeadmin-quick-summary-card homeadmin-card--overview">
           <div className="homeadmin-section-header">
             <div>
               <h2 className="homeadmin-section-title">Riepilogo rapido</h2>
@@ -1952,7 +1952,10 @@ export default function Home_admin() {
           </div>
         </section>
 
-        <section ref={usersSectionRef} className="homeadmin-card homeadmin-card-primary">
+        <section
+          ref={usersSectionRef}
+          className="homeadmin-card homeadmin-card-primary homeadmin-card--users"
+        >
           <AdminUsersSection
             users={users}
             usersLoading={usersLoading}
@@ -1992,7 +1995,10 @@ export default function Home_admin() {
           />
         </section>
 
-        <section ref={leaveRequestsSectionRef} className="homeadmin-card homeadmin-card-primary">
+        <section
+          ref={leaveRequestsSectionRef}
+          className="homeadmin-card homeadmin-card-primary homeadmin-card--leave-requests"
+        >
           <div className="admin-section-title-row">
             <h2 className="homeadmin-section-title">Richieste assenze</h2>
 
@@ -2113,7 +2119,10 @@ export default function Home_admin() {
           )}
         </section>
 
-        <section ref={approvedLeavesSectionRef} className="homeadmin-card homeadmin-card-primary">
+        <section
+          ref={approvedLeavesSectionRef}
+          className="homeadmin-card homeadmin-card-primary homeadmin-card--approved-leaves"
+        >
           <div className="admin-section-title-row">
             <h2 className="homeadmin-section-title">Ferie e PIR approvati</h2>
 
@@ -2303,7 +2312,10 @@ export default function Home_admin() {
           )}
         </section>
 
-        <section ref={manualRequestsSectionRef} className="homeadmin-card homeadmin-card-primary">
+        <section
+          ref={manualRequestsSectionRef}
+          className="homeadmin-card homeadmin-card-primary homeadmin-card--manual-requests"
+        >
           <div className="admin-section-title-row">
             <h2 className="homeadmin-section-title">
               Richieste chiusura manuale
@@ -2677,7 +2689,7 @@ export default function Home_admin() {
           )}
         </section>
 
-        <section className="homeadmin-card">
+        <section className="homeadmin-card homeadmin-card--multi-summary">
           <h2 className="homeadmin-section-title">Riepilogo multiutente</h2>
 
           <div className="homeadmin-form">
@@ -2945,7 +2957,7 @@ export default function Home_admin() {
             renderEmptyState("Nessun dato disponibile nel periodo selezionato.")}
         </section>
 
-        <section className="homeadmin-card">
+        <section className="homeadmin-card homeadmin-card--daily-detail">
           <h2 className="homeadmin-section-title">Dettaglio giornaliero</h2>
 
           <div className="homeadmin-grid">
@@ -3165,7 +3177,7 @@ export default function Home_admin() {
           </div>
         </section>
 
-        <section className="homeadmin-card homeadmin-settings-card">
+        <section className="homeadmin-card homeadmin-settings-card homeadmin-card--settings">
           <div className="homeadmin-section-header">
             <div>
               <h2>Impostazioni ferie/PIR</h2>
