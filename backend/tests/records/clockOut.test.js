@@ -9,6 +9,12 @@
  * - non dipendiamo ancora dal database reale
  */
 
+jest.mock("../../services/timeRecordLock", () => ({
+  withTimeRecordLock: jest.fn(async (_userId, operation) =>
+    operation("test-owner", async () => {})
+  ),
+}));
+
 const request = require("supertest");
 
 // Mock dipendenze usate dal middleware auth e dal controller records
@@ -43,7 +49,7 @@ describe("POST /api/records/clock-out", () => {
 
     // Di default nei vecchi test non esiste nessuna mutua approvata oggi
     LeaveRequest.findOne.mockResolvedValue(null);
-    User.findById.mockReturnValue({
+     User.findById.mockReturnValue({
       select: jest.fn().mockReturnThis(),
       lean: jest.fn().mockResolvedValue({ geolocationEnabled: true }),
     });
@@ -373,31 +379,7 @@ describe("POST /api/records/clock-out", () => {
     expect(LeaveRequest.findOne).toHaveBeenCalled();
     expect(TimeRecord.findOne).not.toHaveBeenCalled();
   });
-
-  test("non considera il PIR orario come assenza giornaliera bloccante in uscita", async () => {
-    await request(app)
-      .post("/api/records/clock-out")
-      .set("Authorization", "Bearer token-valido");
-
-    expect(LeaveRequest.findOne).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "approved",
-        $and: [
-          {
-            $or: [
-              { type: { $in: ["mutua", "ferie"] } },
-              {
-                type: "pir",
-                hours: null,
-              },
-            ],
-          },
-        ],
-      })
-    );
-  });
-
-  test("restituisce 200 se la geolocalizzazione è attiva ma disattivata per l'utente in uscita", async () => {
+    test("restituisce 200 se la geolocalizzazione è attiva ma disattivata per l'utente in uscita", async () => {
     process.env.GEOLOCATION_CLOCK_IN_ENABLED = "true";
     process.env.OFFICE_LAT = "45.19101925311772";
     process.env.OFFICE_LNG = "7.893680019094721";

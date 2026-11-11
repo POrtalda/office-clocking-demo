@@ -9,7 +9,14 @@
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:watch": "cross-env NODE_ENV=test jest --watch",
     "seed:demo": "node scripts/seedDemo.js",
-    "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand"
+    "test:coverage": "cross-env NODE_ENV=test jest --coverage --runInBand",
+    "demo:configure": "node scripts/configureShowcaseLocal.js",
+    "demo:check": "node scripts/startShowcaseLocal.js --check",
+    "demo:local": "node scripts/startShowcaseLocal.js",
+    "showcase:check": "node scripts/startRemoteShowcase.js --check",
+    "showcase:start": "node scripts/startRemoteShowcase.js",
+    "showcase:plan": "node scripts/seedRemoteShowcase.js",
+    "showcase": "node scripts/showcaseOffline.js"
   },
   "keywords": [],
   "author": "",

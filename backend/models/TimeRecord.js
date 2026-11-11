@@ -184,6 +184,72 @@ const clockLocationSchema = new mongoose.Schema(
   }
 );
 
+
+const breakSchema = new mongoose.Schema({
+  startAt: { type: Date, required: true },
+  endAt: { type: Date, default: null },
+  startMode: { type: String, enum: ['office', 'offsite'], default: 'office' },
+  endMode: { type: String, enum: ['office', 'offsite'], default: 'office' },
+  startLocation: { type: clockLocationSchema, default: null },
+  endLocation: { type: clockLocationSchema, default: null },
+  startOffsiteLocation: {
+    latitude: { type: Number, default: null }, longitude: { type: Number, default: null }, accuracy: { type: Number, default: null },
+  },
+  endOffsiteLocation: {
+    latitude: { type: Number, default: null }, longitude: { type: Number, default: null }, accuracy: { type: Number, default: null },
+  },
+  startNote: { type: String, trim: true, maxlength: 1000, default: '' },
+  endNote: { type: String, trim: true, maxlength: 1000, default: '' },
+  startOffsiteReason: { type: String, trim: true, maxlength: 500, default: '' },
+  endOffsiteReason: { type: String, trim: true, maxlength: 500, default: '' },
+  autoEndedAtMidnight: { type: Boolean, default: false },
+}, { _id: false });
+
+// ============================================================================
+// SOTTOSCHEMA: STORICO CORREZIONI ADMIN
+// ============================================================================
+
+const adminEditSchema = new mongoose.Schema(
+  {
+    previousClockIn: {
+      type: Date,
+      required: true,
+    },
+    previousClockOut: {
+      type: Date,
+      required: true,
+    },
+    newClockIn: {
+      type: Date,
+      required: true,
+    },
+    newClockOut: {
+      type: Date,
+      required: true,
+    },
+    reason: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 1000,
+    },
+    editedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    editedAt: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+
 // ============================================================================
 // SCHEMA PRINCIPALE TIMBRATURA
 // ============================================================================
@@ -267,6 +333,42 @@ const timeRecordSchema = new mongoose.Schema(
     clockOutLocation: {
       type: clockLocationSchema,
       default: null,
+    },
+
+    // I record storici privi di breaks restano validi (nessuna pausa).
+    breaks: { type: [breakSchema], default: [] },
+
+    // Modalità e note, separate per entrata e uscita.
+    clockInMode: { type: String, enum: ["office", "offsite"], default: "office" },
+    clockOutMode: { type: String, enum: ["office", "offsite"], default: "office" },
+    clockInNote: { type: String, trim: true, default: "", maxlength: 1000 },
+    clockOutNote: { type: String, trim: true, default: "", maxlength: 1000 },
+    clockInOffsiteReason: { type: String, trim: true, default: "", maxlength: 500 },
+    clockOutOffsiteReason: { type: String, trim: true, default: "", maxlength: 500 },
+    // Posizione dichiarata dal dispositivo: non equivale a verifica della sede.
+    clockInOffsiteLocation: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+      accuracy: { type: Number, default: null },
+    },
+    clockOutOffsiteLocation: {
+      latitude: { type: Number, default: null },
+      longitude: { type: Number, default: null },
+      accuracy: { type: Number, default: null },
+    },
+
+    // Provenienza della chiusura automatica: preserva lo storico per l'Admin.
+    autoClosure: {
+      closedAt: { type: Date, default: null },
+      processedAt: { type: Date, default: null },
+      reason: { type: String, default: "" },
+    },
+
+    // Storico permanente delle correzioni effettuate dagli Admin.
+    // Le correzioni successive non cancellano quelle precedenti.
+    adminEditHistory: {
+      type: [adminEditSchema],
+      default: [],
     },
 
     /**

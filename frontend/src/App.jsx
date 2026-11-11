@@ -34,12 +34,9 @@ function App() {
 
   // Evita doppi submit mentre la richiesta è in corso
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showSlowLoading, setShowSlowLoading] = useState(false);
-
   const [demoAccounts, setDemoAccounts] = useState([]);
   const [demoAccountsLoading, setDemoAccountsLoading] = useState(false);
   const [demoAccountsError, setDemoAccountsError] = useState("");
-
   const loginFormRef = useRef(null);
 
   // =========================
@@ -47,7 +44,7 @@ function App() {
   // =========================
 
   // Attiva il box helper solo negli ambienti demo
-  const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
+  const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true" && import.meta.env.VITE_SHOWCASE_REMOTE !== "true";
 
   // =========================
   // VALORI DERIVATI
@@ -74,16 +71,13 @@ function App() {
    * Così ogni utente ha il suo blocco separato.
    */
   const getBlockedKey = useCallback((name) => {
-    const safeName =
-      String(name || "").trim().toLowerCase() || "no-username";
-
+    const safeName = String(name || "").trim().toLowerCase() || "no-username";
     return `loginBlockedUntil:${safeName}`;
   }, []);
 
   /**
    * Compila automaticamente username e password di un account demo.
-   * Non esegue il login automatico:
-   * l'utente deve comunque cliccare "Accedi".
+   * Non esegue il login automatico: l'utente deve comunque cliccare "Accedi".
    */
   function fillDemoCredentials(account) {
     setUsername(account.username);
@@ -100,9 +94,7 @@ function App() {
   }
 
   function getDemoAccountLabel(account) {
-    const fullName = [account.name, account.surname]
-      .filter(Boolean)
-      .join(" ");
+    const fullName = [account.name, account.surname].filter(Boolean).join(" ");
 
     if (fullName) return fullName;
 
@@ -110,9 +102,7 @@ function App() {
   }
 
   function getDemoAccountDescription(account) {
-    return account.role === "admin"
-      ? "Dashboard aziendale"
-      : "Dashboard utente";
+    return account.role === "admin" ? "Dashboard aziendale" : "Dashboard utente";
   }
 
   function getDemoAccountIcon(account) {
@@ -157,10 +147,6 @@ function App() {
     [getBlockedKey]
   );
 
-  // =========================
-  // CARICAMENTO ACCOUNT DEMO
-  // =========================
-
   useEffect(() => {
     if (!isDemoMode) return;
 
@@ -172,7 +158,6 @@ function App() {
 
       try {
         const baseUrl = import.meta.env.VITE_API_URL;
-
         const response = await fetch(`${baseUrl}/api/demo/login-users`);
         const data = await response.json().catch(() => ({}));
 
@@ -187,19 +172,11 @@ function App() {
         if (!isMounted) return;
 
         const sortedUsers = [...users].sort((firstUser, secondUser) => {
-          if (firstUser.role === "admin" && secondUser.role !== "admin") {
-            return -1;
-          }
+          if (firstUser.role === "admin" && secondUser.role !== "admin") return -1;
+          if (firstUser.role !== "admin" && secondUser.role === "admin") return 1;
 
-          if (firstUser.role !== "admin" && secondUser.role === "admin") {
-            return 1;
-          }
-
-          const firstLabel =
-            getDemoAccountLabel(firstUser).toLowerCase();
-
-          const secondLabel =
-            getDemoAccountLabel(secondUser).toLowerCase();
+          const firstLabel = getDemoAccountLabel(firstUser).toLowerCase();
+          const secondLabel = getDemoAccountLabel(secondUser).toLowerCase();
 
           return firstLabel.localeCompare(secondLabel, "it");
         });
@@ -219,7 +196,6 @@ function App() {
         if (!isMounted) return;
 
         setDemoAccounts([]);
-
         setDemoAccountsError(
           error.message || "Impossibile caricare gli utenti demo."
         );
@@ -259,9 +235,7 @@ function App() {
   // =========================
 
   useEffect(() => {
-    const remainingSec =
-      getRemainingBlockSeconds(normalizedUsername);
-
+    const remainingSec = getRemainingBlockSeconds(normalizedUsername);
     setRetryAfterSec(remainingSec);
   }, [getRemainingBlockSeconds, normalizedUsername]);
 
@@ -273,18 +247,12 @@ function App() {
     if (!normalizedUsername || retryAfterSec <= 0) return;
 
     const timer = setInterval(() => {
-      const remainingSec =
-        getRemainingBlockSeconds(normalizedUsername);
-
+      const remainingSec = getRemainingBlockSeconds(normalizedUsername);
       setRetryAfterSec(remainingSec);
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [
-    getRemainingBlockSeconds,
-    retryAfterSec,
-    normalizedUsername,
-  ]);
+  }, [getRemainingBlockSeconds, retryAfterSec, normalizedUsername]);
 
   // =========================
   // PULIZIA MESSAGGI SOLO QUANDO L'UTENTE CAMBIA INPUT
@@ -294,21 +262,6 @@ function App() {
     setError("");
     setSessionMessage("");
   }, [username, password, setSessionMessage]);
-
-  useEffect(() => {
-    const isWaitingForServer = isSubmitting || demoAccountsLoading;
-
-    if (!isWaitingForServer) {
-      setShowSlowLoading(false);
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      setShowSlowLoading(true);
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [isSubmitting, demoAccountsLoading]);
 
   // =========================
   // SUBMIT LOGIN
@@ -327,12 +280,9 @@ function App() {
       const result = await login(username, password);
 
       if (!result.success) {
-        setError(
-          result.message || "Username o password non validi."
-        );
+        setError(result.message || "Username o password non validi.");
 
-        let retrySeconds =
-          Number(result.retryAfterSeconds || 0);
+        let retrySeconds = Number(result.retryAfterSeconds || 0);
 
         // Fallback prudenziale se arriva 429 ma senza countdown
         if (result.status === 429 && retrySeconds <= 0) {
@@ -340,8 +290,7 @@ function App() {
         }
 
         if (retrySeconds > 0) {
-          const blockedUntil =
-            Date.now() + retrySeconds * 1000;
+          const blockedUntil = Date.now() + retrySeconds * 1000;
 
           localStorage.setItem(
             getBlockedKey(normalizedUsername),
@@ -356,47 +305,25 @@ function App() {
       }
 
       // Login ok: pulizia blocco locale
-      localStorage.removeItem(
-        getBlockedKey(normalizedUsername)
-      );
-
+      localStorage.removeItem(getBlockedKey(normalizedUsername));
       setRetryAfterSec(0);
       setError("");
     } finally {
       setIsSubmitting(false);
     }
   }
-
   return (
     <>
       <div className="login-page">
-        {showSlowLoading && (
-          <div className="demo-loading-overlay">
-            <div className="demo-loading-card">
-              <div className="demo-loading-spinner" aria-hidden="true" />
-
-              <strong>Caricamento</strong>
-
-              <div className="demo-loading-dots" aria-hidden="true">
-                <span>.</span>
-                <span>.</span>
-                <span>.</span>
-              </div>
-
-              <p>
-                Il server demo si sta avviando. Attendi qualche secondo...
-              </p>
-            </div>
-          </div>
-        )}
         <div className="login-card">
           <div className="login-header">
             <h1 className="login-title">Office Clocking</h1>
-
             <p className="login-subtitle">
               Accedi per gestire timbrature e presenze
             </p>
           </div>
+
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p className="login-subtitle">Showcase online · accesso su invito · email disabilitate</p>}
 
           {sessionMessage && (
             <div className="login-message login-message-warning">
@@ -405,126 +332,27 @@ function App() {
           )}
 
           {error && (
-            <div className="login-message login-message-error">
-              {error}
-            </div>
+            <div className="login-message login-message-error">{error}</div>
           )}
 
           {isBlocked && (
             <div className="login-message login-message-info">
               L&apos;utente{" "}
-              <strong>
-                {normalizedUsername || "selezionato"}
-              </strong>{" "}
-              è temporaneamente bloccato. Riprova tra{" "}
-              <strong>
-                {formatCountdown(retryAfterSec)}
-              </strong>
-              .
+              <strong>{normalizedUsername || "selezionato"}</strong> è
+              temporaneamente bloccato. Riprova tra{" "}
+              <strong>{formatCountdown(retryAfterSec)}</strong>.
             </div>
           )}
 
-          {isDemoMode && (
-            <div className="login-demo-helper">
-              <div className="login-demo-kicker">
-                Versione dimostrativa
-              </div>
-
-              <p className="login-demo-note">
-                Questa demo usa dati dimostrativi. Alcune
-                azioni sensibili sono disabilitate.
-              </p>
-
-              <h2>🚀 Prova Office Clocking</h2>
-
-              <p>
-                Scegli il profilo che vuoi provare.
-                Username e password verranno compilati
-                automaticamente.
-              </p>
-
-              <div className="login-demo-buttons">
-                {demoAccountsLoading ? (
-                  <p className="login-demo-status">
-                    Carico utenti demo...
-                  </p>
-                ) : demoAccountsError ? (
-                  <p className="login-demo-status login-demo-status-error">
-                    {demoAccountsError}
-                  </p>
-                ) : demoAccounts.length === 0 ? (
-                  <p className="login-demo-status">
-                    Nessun utente demo disponibile.
-                  </p>
-                ) : (
-                  demoAccounts.map((account) => (
-                    <button
-                      key={account.username}
-                      type="button"
-                      className={`login-demo-button${account.featured
-                        ? " login-demo-button-featured"
-                        : ""
-                        }`}
-                      onClick={() =>
-                        fillDemoCredentials(account)
-                      }
-                      disabled={isSubmitting}
-                    >
-                      <span className="login-demo-button-icon">
-                        {account.icon}
-                      </span>
-
-                      <span className="login-demo-button-text">
-                        <span className="login-demo-button-heading">
-                          <strong>
-                            {account.label}
-                          </strong>
-
-                          <span
-                            className={`login-demo-role-badge${account.featured
-                              ? " login-demo-role-badge-featured"
-                              : ""
-                              }`}
-                          >
-                            {account.roleLabel}
-                          </span>
-                        </span>
-
-                        <small>
-                          {account.description}
-                        </small>
-
-                        {account.featured && (
-                          <span className="login-demo-recommended">
-                            Consigliato per iniziare
-                          </span>
-                        )}
-                      </span>
-                    </button>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-
-          <form
-            ref={loginFormRef}
-            className="login-form"
-            onSubmit={handleSubmit}
-          >
+          <form ref={loginFormRef} className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">
-              <label htmlFor="username">
-                Username
-              </label>
-
+              <label htmlFor="username">Username</label>
               <input
                 id="username"
                 className="login-input"
                 type="text"
                 value={username}
-                onChange={(e) =>
-                  setUsername(e.target.value)
-                }
+                onChange={(e) => setUsername(e.target.value)}
                 placeholder="Inserisci username"
                 autoComplete="username"
                 disabled={isSubmitting}
@@ -532,23 +360,16 @@ function App() {
             </div>
 
             <div className="login-field">
-              <label htmlFor="password">
-                Password
-              </label>
-
+              <label htmlFor="password">Password</label>
               <input
                 id="password"
                 className="login-input"
                 type="password"
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Inserisci password"
                 autoComplete="current-password"
-                disabled={
-                  isSubmitting || isBlocked
-                }
+                disabled={isSubmitting || isBlocked}
               />
             </div>
 
@@ -558,9 +379,7 @@ function App() {
               disabled={isFormDisabled}
             >
               {isBlocked
-                ? `Attendi ${formatCountdown(
-                  retryAfterSec
-                )}`
+                ? `Attendi ${formatCountdown(retryAfterSec)}`
                 : isSubmitting
                   ? "Accesso in corso..."
                   : "Accedi"}
@@ -568,18 +387,78 @@ function App() {
           </form>
 
           {isDemoMode && (
-            <div className="login-features-cta">
-              <span>
-                Vuoi prima capire cosa include la demo?
-              </span>
+            <>
+              <div className="login-demo-helper">
+                <div className="login-demo-kicker">Versione dimostrativa</div>
 
-              <Link
-                className="login-features-link"
-                to="/funzionalita"
-              >
-                Scopri tutte le funzionalità
-              </Link>
-            </div>
+                <p className="login-demo-note">
+                  Questa demo usa dati dimostrativi. Alcune azioni sensibili sono
+                  disabilitate.
+                </p>
+
+                <h2>🚀 Prova Office Clocking</h2>
+
+                <p>
+                  Scegli un profilo demo per compilare automaticamente le
+                  credenziali.
+                </p>
+
+                <div className="login-demo-buttons">
+                  {demoAccountsLoading ? (
+                    <p className="login-demo-status">Carico utenti demo...</p>
+                  ) : demoAccountsError ? (
+                    <p className="login-demo-status login-demo-status-error">
+                      {demoAccountsError}
+                    </p>
+                  ) : demoAccounts.length === 0 ? (
+                    <p className="login-demo-status">
+                      Nessun utente demo disponibile.
+                    </p>
+                  ) : (
+                    demoAccounts.map((account) => (
+                      <button
+                        key={account.username}
+                        type="button"
+                        className={`login-demo-button${account.featured ? " login-demo-button-featured" : ""
+                          }`}
+                        onClick={() => fillDemoCredentials(account)}
+                        disabled={isSubmitting}
+                      >
+                        <span className="login-demo-button-icon">
+                          {account.icon}
+                        </span>
+                        <span className="login-demo-button-text">
+                          <span className="login-demo-button-heading">
+                            <strong>{account.label}</strong>
+                            <span
+                              className={`login-demo-role-badge${account.featured ? " login-demo-role-badge-featured" : ""
+                                }`}
+                            >
+                              {account.roleLabel}
+                            </span>
+                          </span>
+
+                          <small>{account.description}</small>
+
+                          {account.featured && (
+                            <span className="login-demo-recommended">
+                              Consigliato per iniziare
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="login-features-cta">
+                <span>Vuoi prima capire cosa include la demo?</span>
+                <Link className="login-features-link" to="/funzionalita">
+                  Scopri tutte le funzionalità
+                </Link>
+              </div>
+            </>
           )}
         </div>
       </div>

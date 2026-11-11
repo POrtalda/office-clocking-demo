@@ -13,6 +13,7 @@
 
 const jwt = require("jsonwebtoken");
 const AppError = require("../utils/AppError");
+const { isRemoteShowcase, ADMIN, jwtVerification } = require("../utils/remoteShowcase");
 
 /**
  * Middleware che protegge le route riservate agli utenti autenticati.
@@ -25,7 +26,7 @@ const AppError = require("../utils/AppError");
  * - username
  * - role
  */
-function authMiddleware(req, res, next) {
+async function authMiddleware(req, res, next) {
   try {
     const authHeader = req.headers.authorization;
 
@@ -50,7 +51,14 @@ function authMiddleware(req, res, next) {
     }
 
     // Verifica firma e validità del JWT
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = isRemoteShowcase()
+      ? jwt.verify(token, process.env.JWT_SECRET, jwtVerification())
+      : jwt.verify(token, process.env.JWT_SECRET);
+    if (isRemoteShowcase()) {
+      const User = require("../models/User");
+      const current = await User.findById(decoded.id).select("username role isActive").lean();
+      if (!current || current.isActive === false || current.username !== decoded.username || current.role !== decoded.role || (current.role === "admin" && current.username !== ADMIN)) return next(new AppError("Sessione non autorizzata", 401, "SHOWCASE_SESSION_REVOKED"));
+    }
 
     // Salva solo i dati utili per le route successive
     req.user = {

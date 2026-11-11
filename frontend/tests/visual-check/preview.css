@@ -1,0 +1,4 @@
+.visual-check-controls { display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; padding:12px; box-sizing:border-box; background:#dbeafe; color:#1e3a8a; font:13px system-ui; }
+.visual-check-controls strong { flex-basis:100%; text-align:center; }
+.visual-check-controls label { display:flex; align-items:center; gap:6px; }
+.visual-check-controls select { padding:6px; border:1px solid #94a3b8; border-radius:6px; max-width:100%; }

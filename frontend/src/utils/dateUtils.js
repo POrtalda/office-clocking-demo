@@ -104,3 +104,8 @@ export function getRomeMonthRange(dateValue) {
     to: `${year}-${month}-${String(lastDay).padStart(2, "0")}`,
   };
 }
+export function toRomeInputDateTime(value) {
+  if (!value) return "";
+  const time = new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Rome", hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23" }).format(new Date(value));
+  return `${toRomeYMD(value)}T${time}`;
+}

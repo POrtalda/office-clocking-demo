@@ -38,6 +38,7 @@ const settingsRoutes = require("./routes/settings");
 const demoRoutes = require("./routes/demo");
 
 const app = express();
+const { installRemoteShowcase } = require("./middleware/remoteShowcase");
 
 // ============================================================================
 // CONFIG BASE
@@ -88,6 +89,7 @@ if (!IS_TEST) {
 
 // Header HTTP di sicurezza
 app.use(helmet());
+installRemoteShowcase(app);
 
 /**
  * CORS:
@@ -137,7 +139,7 @@ app.use(
 );
 
 // Parsing body JSON
-app.use(express.json());
+app.use(express.json({ limit: process.env.APP_ENV === "showcase" ? "32kb" : "100kb" }));
 
 // ============================================================================
 // RATE LIMIT GLOBALE API

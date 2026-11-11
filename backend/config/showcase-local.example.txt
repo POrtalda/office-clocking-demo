@@ -1,0 +1,11 @@
+# Usato esclusivamente da npm run demo:local; non copiare in produzione.
+NODE_ENV=development
+DEMO_MODE=true
+DEMO_LOCAL_GPS_BYPASS=true
+MONGO_URI=mongodb://127.0.0.1:27017/office_clocking_showcase_v2
+PORT=5055
+CLIENT_URL=http://127.0.0.1:5175
+# Valorizzato localmente da npm run demo:configure.
+JWT_SECRET=
+# Il bypass è separato: gli altri flussi continuano a usare il controllo GPS.
+GEOLOCATION_CLOCK_IN_ENABLED=true

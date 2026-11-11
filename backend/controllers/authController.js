@@ -18,6 +18,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const AppError = require("../utils/AppError");
+const { isRemoteShowcase, ADMIN, strongDemoPassword, jwtOptions } = require("../utils/remoteShowcase");
 
 /**
  * POST /api/auth/login
@@ -74,6 +75,8 @@ async function loginUser(req, res, next) {
       );
     }
 
+    if (isRemoteShowcase() && !strongDemoPassword(password)) return next(new AppError("Credenziali non valide", 401, "INVALID_CREDENTIALS"));
+
     // Cerco l'utente nel database tramite username normalizzato
     const user = await User.findOne({ username: normalizedUsername });
 
@@ -113,6 +116,8 @@ async function loginUser(req, res, next) {
       );
     }
 
+    if (isRemoteShowcase() && user.role === "admin" && user.username !== ADMIN) return next(new AppError("Credenziali non valide", 401, "INVALID_CREDENTIALS"));
+
     // Verifica configurazione JWT
     if (!process.env.JWT_SECRET) {
       return next(
@@ -132,7 +137,7 @@ async function loginUser(req, res, next) {
         role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "8h" }
+      isRemoteShowcase() ? jwtOptions() : { expiresIn: "8h" }
     );
 
     // Risposta finale di successo

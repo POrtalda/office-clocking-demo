@@ -1,0 +1,16 @@
+# Existing dedicated demo site only; no cloud settings are changed by this local file.
+[build]
+  base = "frontend"
+  command = "npm run build:showcase"
+  publish = "dist-showcase"
+[build.environment]
+  NODE_VERSION = "22"
+  VITE_API_URL = "https://office-clocking-backend-demo.onrender.com"
+# Git previews/branch builds are deliberately cancelled; build hooks bypass ignore,
+# so the failing command is an additional publication guard for these contexts.
+[context.branch-deploy]
+  ignore = 'node -e "process.exit(0)"'
+  command = 'node -e "process.exit(1)"'
+[context.deploy-preview]
+  ignore = 'node -e "process.exit(0)"'
+  command = 'node -e "process.exit(1)"'

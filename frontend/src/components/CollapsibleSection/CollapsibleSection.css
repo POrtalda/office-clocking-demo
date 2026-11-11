@@ -1,0 +1,24 @@
+[data-collapsible-section] { min-width: 0; }
+.collapsible-section-heading { margin: 0; }
+.collapsible-section-trigger { appearance: none; display: flex; align-items: center; gap: 12px; width: 100%; min-height: 64px; padding: 12px 0; border: 0; background: transparent; color: #334155; font: inherit; font-weight: 700; text-align: left; cursor: pointer; border-radius: 10px; }
+.collapsible-section-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.collapsible-section-trigger:focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
+.collapsible-section-trigger:disabled { cursor: progress; }
+.collapsible-section-arrow { flex: 0 0 20px; color: #2563eb; font-size: 1.5rem; text-align: center; transition: transform .15s ease; }
+[data-collapsible-section][data-open="false"] > .collapsible-section-heading .collapsible-section-arrow { transform: rotate(-90deg); }
+.collapsible-section-badge { flex-shrink: 0; font-size: .75rem; font-weight: 600; color: #475569; }
+.collapsible-section-content { min-width: 0; padding-top: 8px; }
+.collapsible-section-content[hidden] { display: none !important; }
+.homeadmin-container [data-collapsible-section] { padding: 0; margin-bottom: 20px; border: 1px solid #dbe4f0; border-radius: 16px; background: #fff; box-shadow: 0 3px 10px rgba(15,23,42,.035); transition: border-color .15s ease, box-shadow .15s ease; }
+.homeadmin-container [data-collapsible-section]::before { display: none; }
+.homeadmin-container [data-collapsible-section] > .collapsible-section-heading > .collapsible-section-trigger { min-height: 76px; padding: 16px 20px; font-size: 1.05rem; border-radius: 15px; background: #f8fafc; transition: background-color .15s ease; }
+.homeadmin-container [data-collapsible-section]:hover { border-color: #93b9ec; box-shadow: 0 6px 18px rgba(37,99,235,.075); }
+.homeadmin-container [data-collapsible-section]:hover > .collapsible-section-heading > .collapsible-section-trigger { background: #eff6ff; }
+.homeadmin-container [data-collapsible-section][data-open="true"] > .collapsible-section-heading > .collapsible-section-trigger { border-radius: 15px 15px 0 0; border-bottom: 1px solid #e2e8f0; }
+.homeadmin-container [data-collapsible-section] > .collapsible-section-content { padding: 20px; }
+.homeadmin-container [data-collapsible-section] > .collapsible-section-heading > .collapsible-section-trigger:focus-visible { outline-offset: -3px; }
+@media (max-width: 640px) {
+  .homeadmin-container [data-collapsible-section] > .collapsible-section-heading > .collapsible-section-trigger { padding: 14px; font-size: .95rem; }
+  .homeadmin-container [data-collapsible-section] > .collapsible-section-content { padding: 14px; }
+}
+@media (prefers-reduced-motion: reduce) { [data-collapsible-section], .collapsible-section-trigger, .collapsible-section-arrow { transition: none !important; } }

@@ -1,0 +1,50 @@
+const request = require("supertest");
+jest.mock("../../models/TimeRecord", () => ({ findOne: jest.fn() }));
+jest.mock("../../models/LeaveRequest", () => ({ findOne: jest.fn() }));
+jest.mock("../../models/User", () => ({ findById: jest.fn() }));
+jest.mock("jsonwebtoken", () => ({ verify: jest.fn() }));
+jest.mock("../../services/timeRecordLock", () => ({ withTimeRecordLock: jest.fn(async (_id, operation) => operation("test", async () => {})) }));
+const TimeRecord = require("../../models/TimeRecord");
+const LeaveRequest = require("../../models/LeaveRequest");
+const User = require("../../models/User");
+const jwt = require("jsonwebtoken");
+const app = require("../../app");
+let record;
+const post = action => request(app).post(`/api/records/${action}`).set("Authorization", "Bearer test").send({});
+beforeEach(() => {
+  jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] });
+  jest.setSystemTime(new Date("2026-11-10T12:00:00Z"));
+  jest.clearAllMocks();
+  jwt.verify.mockReturnValue({ id: "employee", role: "user", username: "mario" });
+  LeaveRequest.findOne.mockResolvedValue(null);
+  User.findById.mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ geolocationEnabled: false }) }) });
+  record = { clockIn: new Date("2026-11-10T08:00:00Z"), clockOut: null, status: "open", breaks: [], save: jest.fn().mockResolvedValue(true) };
+  TimeRecord.findOne.mockReturnValue({ sort: jest.fn().mockImplementation(async () => record) });
+});
+afterEach(() => jest.useRealTimers());
+test("starts and ends multiple breaks, then saves net hours at clock-out", async () => {
+  expect((await post("break-start")).status).toBe(200);
+  jest.setSystemTime(new Date("2026-11-10T13:00:00Z"));
+  expect((await post("break-end")).status).toBe(200);
+  jest.setSystemTime(new Date("2026-11-10T15:00:00Z"));
+  expect((await post("break-start")).status).toBe(200);
+  jest.setSystemTime(new Date("2026-11-10T15:15:00Z"));
+  expect((await post("break-end")).status).toBe(200);
+  jest.setSystemTime(new Date("2026-11-10T17:00:00Z"));
+  const res = await post("clock-out");
+  expect(res.status).toBe(200);
+  expect(record.durationSec).toBe(27900);
+  expect(record.breaks).toHaveLength(2);
+  expect(record.save).toHaveBeenCalledTimes(5);
+});
+test("rejects duplicate break start and clock-out during an active break", async () => {
+  record.breaks.push({ startAt: new Date("2026-11-10T11:00:00Z"), endAt: null });
+  expect((await post("break-start")).body.code).toBe("BREAK_ALREADY_OPEN");
+  expect((await post("clock-out")).status).toBe(400);
+  expect(record.save).not.toHaveBeenCalled();
+});
+test("rejects break end without a break and start without a session", async () => {
+  expect((await post("break-end")).body.code).toBe("NO_OPEN_BREAK");
+  record = null;
+  expect((await post("break-start")).body.code).toBe("NO_ACTIVE_WORK_SESSION");
+});

@@ -1,0 +1,51 @@
+# NEW-SERVICE FALLBACK ONLY: do NOT sync this Blueprint to replace the public demo.
+# Preferred replacement uses the verified existing service manually; see reuse-existing.example.json.
+# No service ID is bound here; syncing may create a new service and requires separate approval.
+# Opt-in Blueprint for a NEW service only. Never sync to an existing Blueprint.
+services:
+  - type: web
+    name: office-clocking-showcase-20261113-api
+    repo: https://github.com/POrtalda/office-clocking-demo
+    runtime: node
+    region: frankfurt
+    plan: starter
+    branch: feature/demo-november-showcase
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: node scripts/startRemoteShowcase.js
+    healthCheckPath: /healthz
+    autoDeployTrigger: off
+    numInstances: 1
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: APP_ENV
+        value: showcase
+      - key: DEMO_MODE
+        value: "true"
+      - key: DEMO_LOCAL_GPS_BYPASS
+        value: "false"
+      - key: GEOLOCATION_CLOCK_IN_ENABLED
+        value: "true"
+      - key: SHOWCASE_EMAIL_MODE
+        value: disabled
+      - key: SHOWCASE_ADMIN_USERNAME
+        value: showcase_admin
+      - key: MONGO_URI
+        sync: false
+      - key: SHOWCASE_ATLAS_HOST
+        sync: false
+      - key: CLIENT_URL
+        sync: false
+      - key: SHOWCASE_API_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: OFFICE_LAT
+        sync: false
+      - key: OFFICE_LNG
+        sync: false
+      - key: OFFICE_RADIUS_METERS
+        sync: false

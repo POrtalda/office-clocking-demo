@@ -1,3 +1,4 @@
+const { calculateWorkDuration, withWorkDuration } = require("../utils/workDuration");
 /**
  * controllers/adminController.js
  *
@@ -121,19 +122,7 @@ function getEffectiveDurationSec(record) {
   if (getEffectiveStatus(record) === "cancelled") {
     return 0;
   }
-  if (
-    typeof record?.durationSec === "number" &&
-    Number.isFinite(record.durationSec) &&
-    record.durationSec >= 0
-  ) {
-    return record.durationSec;
-  }
-
-  if (record?.clockIn && record?.clockOut) {
-    return calcDurationSec(record.clockIn, record.clockOut);
-  }
-
-  return 0;
+  return withWorkDuration(record).durationSec;
 }
 
 function getAdminStatusLabel(record) {
@@ -153,7 +142,7 @@ function decorateRecordForAdmin(record) {
   const effectiveDurationSec = getEffectiveDurationSec(record);
 
   return {
-    ...record,
+    ...withWorkDuration(record),
     effectiveStatus,
     effectiveStatusLabel: getAdminStatusLabel(record),
     effectiveDurationSec,
@@ -424,8 +413,9 @@ async function updateUserGeolocationStatus(req, res, next) {
     await userToUpdate.save();
 
     return res.status(200).json({
-      message: `Geolocalizzazione ${geolocationEnabled ? "attivata" : "disattivata"
-        } per l'utente`,
+      message: `Geolocalizzazione ${
+        geolocationEnabled ? "attivata" : "disattivata"
+      } per l'utente`,
       user: toAdminUserResponse(userToUpdate),
     });
   } catch (err) {
@@ -1042,27 +1032,19 @@ async function approveLeaveRequest(req, res, next) {
       );
     }
 
-    const isHourlyPir =
-      leave.type === "pir" &&
-      leave.hours != null &&
-      leave.startTime &&
-      leave.endTime;
+    const existingTimeRecord = await TimeRecord.findOne({
+      user: leave.user,
+      clockIn: { $gte: start, $lte: end },
+    });
 
-    if (!isHourlyPir) {
-      const existingTimeRecord = await TimeRecord.findOne({
-        user: leave.user,
-        clockIn: { $gte: start, $lte: end },
-      });
-
-      if (existingTimeRecord) {
-        return next(
-          new AppError(
-            "Non puoi approvare questa assenza: esiste gia una timbratura nello stesso giorno.",
-            409,
-            "TIMERECORD_ALREADY_PRESENT"
-          )
-        );
-      }
+    if (existingTimeRecord) {
+      return next(
+        new AppError(
+          "Non puoi approvare questa assenza: esiste gia una timbratura nello stesso giorno.",
+          409,
+          "TIMERECORD_ALREADY_PRESENT"
+        )
+      );
     }
 
     leave.status = "approved";
@@ -1377,6 +1359,9 @@ async function exportRecordsCsv(req, res, next) {
       "cancelledBy",
       "cancelledAtISO",
       "cancelReason",
+      "pauseSec",
+      "pauseHHMMSS",
+      "pauseIntervalliISO",
     ].join(delimiter);
 
     const recordLines = records.map((record) => {
@@ -1436,6 +1421,9 @@ async function exportRecordsCsv(req, res, next) {
         escapeCsv(cancelledByUsername),
         escapeCsv(cancelledAtISO),
         escapeCsv(cancelReason),
+        escapeCsv(record.breakSec),
+        escapeCsv(secToHHMMSS(record.breakSec)),
+        escapeCsv((record.breaks || []).map(b => `${new Date(b.startAt).toISOString()} / ${b.endAt ? new Date(b.endAt).toISOString() : "In corso"}`).join(" | ")),
       ].join(delimiter);
     });
 
@@ -1477,6 +1465,9 @@ async function exportRecordsCsv(req, res, next) {
         escapeCsv(""),
         escapeCsv(""),
         escapeCsv(""),
+        escapeCsv(""),
+        escapeCsv(""),
+        escapeCsv(""),
       ].join(delimiter);
     });
 
@@ -1496,7 +1487,8 @@ async function exportRecordsCsv(req, res, next) {
       "Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
       "Content-Disposition",
-      `attachment; filename="office-clocking_ALL_${fromStr}_to_${toStr}${usernameNormalized ? `_user-${usernameNormalized}` : ""
+      `attachment; filename="office-clocking_ALL_${fromStr}_to_${toStr}${
+        usernameNormalized ? `_user-${usernameNormalized}` : ""
       }.csv"`
     );
 
@@ -1584,7 +1576,7 @@ async function getUserSummary(req, res, next) {
         },
       ],
     })
-      .select("type date startDate endDate status hours")
+      .select("type date startDate endDate status")
       .sort({ startDate: 1, date: 1, createdAt: 1 })
       .lean();
 
@@ -1594,12 +1586,6 @@ async function getUserSummary(req, res, next) {
     const absenceDaysSet = new Set();
 
     for (const leave of approvedLeaves) {
-      const isHourlyPir = leave.type === "pir" && leave.hours != null;
-
-      if (isHourlyPir) {
-        continue;
-      }
-
       const leaveDays = getLeaveDaysInRange(leave, start, nextDayStart);
 
       for (const localDay of leaveDays) {
@@ -1763,7 +1749,7 @@ async function getSummaryAll(req, res, next) {
         },
       ],
     })
-      .select("user type date startDate endDate status hours")
+      .select("user type date startDate endDate status")
       .sort({ startDate: 1, date: 1, createdAt: 1 })
       .lean();
 
@@ -1772,12 +1758,6 @@ async function getSummaryAll(req, res, next) {
       const bucket = usersMap.get(userId);
 
       if (!bucket) continue;
-
-      const isHourlyPir = leave.type === "pir" && leave.hours != null;
-
-      if (isHourlyPir) {
-        continue;
-      }
 
       const leaveDays = getLeaveDaysInRange(leave, start, nextDayStart);
 
@@ -1850,19 +1830,25 @@ async function getManualClosureRequests(req, res, next) {
         record.manualClosureRequest?.proposedClockOut || null;
 
       let proposedDurationSec = null;
+      let breakRangeConflict = false;
 
       if (
         record.clockIn &&
         proposedClockOut &&
         new Date(proposedClockOut).getTime() > new Date(record.clockIn).getTime()
       ) {
-        proposedDurationSec = calcDurationSec(record.clockIn, proposedClockOut);
+        try {
+          proposedDurationSec = calculateWorkDuration(record, proposedClockOut).durationSec;
+        } catch (_) {
+          breakRangeConflict = true;
+        }
       }
 
       return {
         ...decorateRecordForAdmin(record),
         username: record.user?.username || "",
         proposedDurationSec,
+        breakRangeConflict,
         proposedDurationHHMMSS:
           proposedDurationSec != null ? secToHHMMSS(proposedDurationSec) : null,
       };
@@ -1922,9 +1908,14 @@ async function approveManualClosureRequest(req, res, next) {
       );
     }
 
-    const durationSec = calcDurationSec(record.clockIn, proposedClockOut);
+    let durationSec;
+    try {
+      ({ durationSec } = calculateWorkDuration(record, proposedClockOut));
+    } catch (_) {
+      return next(new AppError("La chiusura proposta non è compatibile con le pause", 400, "BREAK_RANGE_CONFLICT"));
+    }
 
-    if (durationSec > MAX_MANUAL_CLOSURE_SECONDS) {
+    if (calcDurationSec(record.clockIn, proposedClockOut) > MAX_MANUAL_CLOSURE_SECONDS) {
       return next(
         new AppError(
           `Impossibile approvare: la durata proposta supera il limite massimo di ${MAX_MANUAL_CLOSURE_HOURS} ore`,
@@ -1934,6 +1925,9 @@ async function approveManualClosureRequest(req, res, next) {
       );
     }
 
+    for (const pause of record.breaks || []) {
+      if (!pause.endAt) pause.endAt = proposedClockOut;
+    }
     record.clockOut = proposedClockOut;
     record.durationSec = durationSec;
     record.status = "closed";

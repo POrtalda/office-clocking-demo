@@ -1,0 +1,33 @@
+# Planned replacement of existing public demo. Render reuse requires ID/isolation verification first.
+# This file is documentation only; it does not update any cloud service.
+# DOCUMENTATION ONLY: replace placeholders privately; no real secrets belong here.
+# Backend Render (private environment, never VITE_ variables).
+APP_ENV=showcase
+NODE_ENV=production
+DEMO_MODE=true
+DEMO_LOCAL_GPS_BYPASS=false
+GEOLOCATION_CLOCK_IN_ENABLED=true
+# Optional SERVER-ONLY Showcase exemption. Missing/false keeps GPS required.
+# Set explicitly to true only on the verified remote Showcase instance.
+SHOWCASE_GPS_CHECK_DISABLED=false
+SHOWCASE_EMAIL_MODE=disabled
+SHOWCASE_ADMIN_USERNAME=showcase_admin
+CLIENT_URL=https://office-clocking-demo.netlify.app
+SHOWCASE_API_URL=https://office-clocking-backend-demo.onrender.com
+SHOWCASE_ATLAS_HOST=REPLACE-NEW-CLUSTER.mongodb.net
+MONGO_URI=SET_PRIVATELY_USING_RUNTIME_USER_AND_EXACT_DATABASE
+JWT_SECRET=GENERATE_PRIVATELY_32_RANDOM_BYTES_HEX
+OFFICE_LAT=SET_REAL_PRESENTATION_VENUE_LATITUDE
+OFFICE_LNG=SET_REAL_PRESENTATION_VENUE_LONGITUDE
+OFFICE_RADIUS_METERS=100
+# No SMTP_* values. No seed URI/user/credential file in Render.
+
+# Frontend build: ONE PUBLIC value only, separate dist-showcase output.
+VITE_API_URL=https://office-clocking-backend-demo.onrender.com
+
+# Separate operator-only seed environment. Do not inherit MONGO_URI or JWT.
+# APP_ENV=showcase
+# SHOWCASE_ATLAS_HOST=actual-new-cluster.mongodb.net
+# SHOWCASE_SEED_URI=SET_PRIVATELY_USING_TEMPORARY_SEED_USER
+# SHOWCASE_SEED_CONFIRM=office-clocking-remote-20261113
+# SHOWCASE_CREDENTIALS_FILE=ABSOLUTE_PRIVATE_PATH_OUTSIDE_REPOSITORY

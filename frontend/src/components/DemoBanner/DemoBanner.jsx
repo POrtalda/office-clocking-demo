@@ -1,4 +1,5 @@
 import "./DemoBanner.css";
+import { isLocalDemoGpsCandidate } from "../../utils/localDemoGps";
 
 export default function DemoBanner() {
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
@@ -9,7 +10,7 @@ export default function DemoBanner() {
 
   return (
     <div className="demo-banner" role="status" aria-label="Modalità demo">
-      <strong>Modalità Demo</strong>
+      <strong>{isLocalDemoGpsCandidate(import.meta.env, window.location.hostname) ? "Modalità Demo locale" : "Modalità Demo"}</strong>
       <span>
         Questa versione usa dati dimostrativi. Alcune azioni sensibili sono
         disabilitate.

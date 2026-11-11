@@ -96,7 +96,7 @@ function getDayRangeInAppTz(dateStr) {
 
   return {
     start: localStart.utc().toDate(),
-    nextDayStart: localStart.add(1, "day").utc().toDate(),
+    nextDayStart: dayjs.tz(`${dayjs.utc(dateStr).add(1, "day").format("YYYY-MM-DD")} 00:00:00`, "YYYY-MM-DD HH:mm:ss", APP_TZ).utc().toDate(),
   };
 }
 
@@ -189,7 +189,7 @@ function parseAppDateTimeToDate(dateStr, timeStr) {
     APP_TZ
   );
 
-  if (!parsed.isValid()) {
+  if (!parsed.isValid() || parsed.format("YYYY-MM-DD HH:mm") !== `${dateStr} ${timeStr}`) {
     return null;
   }
 

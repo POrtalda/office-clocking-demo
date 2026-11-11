@@ -1,3 +1,10 @@
+import ThemeToggle from "../Theme/ThemeToggle";
+import SectionPreferencesProvider from "../CollapsibleSection/SectionPreferencesProvider";
+import { revealSection } from "../../utils/sectionPreferences";
+import CollapsibleSection from "../CollapsibleSection/CollapsibleSection";
+import AdminRecordEditor from "./AdminRecordEditor";
+import RecordBreakSummary from "./RecordBreakSummary";
+import AdminDailyAttendance from "./AdminDailyAttendance";
 import "./Home-admin.css";
 import {
   Fragment,
@@ -126,6 +133,7 @@ export default function Home_admin() {
   const { logout, user, handleSessionExpired } = useContext(AuthContext);
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const isRemoteShowcase = import.meta.env.VITE_SHOWCASE_REMOTE === "true";
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
   const logoutTimerRef = useRef(null);
   const singleSummarySectionRef = useRef(null);
@@ -561,17 +569,6 @@ export default function Home_admin() {
 
     const startLabel = formatDateIT(startDate);
     const endLabel = endDate ? formatDateIT(endDate) : "";
-
-    if (
-      leave?.type === "pir" &&
-      leave?.hours != null &&
-      leave?.startTime &&
-      leave?.endTime
-    ) {
-      const hoursLabel = `${leave.hours} ${leave.hours === 1 ? "ora" : "ore"}`;
-
-      return `${startLabel} · ${leave.startTime}–${leave.endTime} · ${hoursLabel}`;
-    }
 
     if (!endLabel || startLabel === endLabel) {
       return startLabel;
@@ -1488,6 +1485,9 @@ export default function Home_admin() {
       "durataSec",
       "durataHHMMSS",
       "stato",
+      "pauseSec",
+      "pauseHHMMSS",
+      "pauseIntervalli",
     ];
 
     const rows = summaryData.records.map((record) => {
@@ -1499,7 +1499,9 @@ export default function Home_admin() {
         record.durationSec != null ? formatDuration(record.durationSec) : "";
       const stato = getRecordStatusLabel(record);
 
-      return [data, entrata, uscita, durataSec, durataHHMMSS, stato];
+      return [data, entrata, uscita, durataSec, durataHHMMSS, stato,
+        record.breakSec || 0, formatDuration(record.breakSec || 0),
+        (record.breaks || []).map(b => `${formatDateTimeIT(b.startAt)} / ${b.endAt ? formatDateTimeIT(b.endAt) : "In corso"}`).join(" | ")];
     });
 
     const csvContent = [header, ...rows]
@@ -1549,6 +1551,7 @@ export default function Home_admin() {
     triggerSingleSummaryHighlight();
 
     if (singleSummarySectionRef.current) {
+      revealSection(singleSummarySectionRef.current);
       singleSummarySectionRef.current.scrollIntoView({
         behavior: "smooth",
         block: "start",
@@ -1586,6 +1589,7 @@ export default function Home_admin() {
   const approvedLeavesSectionRef = useRef(null);
 
   function scrollToAdminSection(sectionRef) {
+    revealSection(sectionRef.current);
     sectionRef.current?.scrollIntoView({
       behavior: "smooth",
       block: "start",
@@ -1776,6 +1780,7 @@ export default function Home_admin() {
   // RENDER PRINCIPALE
   // =========================
   return (
+    <SectionPreferencesProvider user={user} page="home-admin">
     <div className="homeadmin-container">
       <div className="homeadmin-box">
         <div className="homeadmin-header">
@@ -1787,6 +1792,7 @@ export default function Home_admin() {
           </div>
 
           <div className="homeadmin-header-actions">
+            <ThemeToggle />
             <button
               className="homeadmin-btn homeadmin-btn-danger"
               onClick={handleLogout}
@@ -1801,6 +1807,8 @@ export default function Home_admin() {
             Logout effettuato con successo.
           </div>
         )}
+
+        {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p>Showcase online · dati dimostrativi · email disabilitate · account e impostazioni in sola lettura</p>}
 
         {isDemoMode && (
           <section className="homeadmin-demo-panel">
@@ -1852,10 +1860,16 @@ export default function Home_admin() {
           </section>
         )}
 
-        <section className="homeadmin-card homeadmin-quick-summary-card homeadmin-card--overview">
+                <AdminDailyAttendance
+          baseUrl={BASE_URL}
+          handleSessionExpired={handleSessionExpired}
+          navigate={navigate}
+        />
+
+        <CollapsibleSection title="Riepilogo rapido" sectionId="quick-summary" className="homeadmin-card homeadmin-quick-summary-card">
           <div className="homeadmin-section-header">
             <div>
-              <h2 className="homeadmin-section-title">Riepilogo rapido</h2>
+
               <p className="homeadmin-muted-text">
                 Una vista immediata delle attività principali da controllare.
               </p>
@@ -1950,12 +1964,9 @@ export default function Home_admin() {
               </span>
             </button>
           </div>
-        </section>
+        </CollapsibleSection>
 
-        <section
-          ref={usersSectionRef}
-          className="homeadmin-card homeadmin-card-primary homeadmin-card--users"
-        >
+        <CollapsibleSection title="Gestione utenti" sectionId="users" ref={usersSectionRef} className="homeadmin-card homeadmin-card-primary">
           <AdminUsersSection
             users={users}
             usersLoading={usersLoading}
@@ -1993,14 +2004,11 @@ export default function Home_admin() {
             getRoleLabel={getRoleLabel}
             uiLabels={ADMIN_UI_LABELS}
           />
-        </section>
+        </CollapsibleSection>
 
-        <section
-          ref={leaveRequestsSectionRef}
-          className="homeadmin-card homeadmin-card-primary homeadmin-card--leave-requests"
-        >
+        <CollapsibleSection title="Richieste assenze" sectionId="leave-requests" ref={leaveRequestsSectionRef} className="homeadmin-card homeadmin-card-primary">
           <div className="admin-section-title-row">
-            <h2 className="homeadmin-section-title">Richieste assenze</h2>
+
 
             <div className="admin-inline-actions">
               <button
@@ -2117,14 +2125,11 @@ export default function Home_admin() {
               </table>
             </div>
           )}
-        </section>
+        </CollapsibleSection>
 
-        <section
-          ref={approvedLeavesSectionRef}
-          className="homeadmin-card homeadmin-card-primary homeadmin-card--approved-leaves"
-        >
+        <CollapsibleSection title="Ferie e PIR approvati" sectionId="approved-leaves" ref={approvedLeavesSectionRef} className="homeadmin-card homeadmin-card-primary">
           <div className="admin-section-title-row">
-            <h2 className="homeadmin-section-title">Ferie e PIR approvati</h2>
+
 
             <div className="admin-inline-actions">
               <button
@@ -2310,16 +2315,11 @@ export default function Home_admin() {
               approvati.
             </p>
           )}
-        </section>
+        </CollapsibleSection>
 
-        <section
-          ref={manualRequestsSectionRef}
-          className="homeadmin-card homeadmin-card-primary homeadmin-card--manual-requests"
-        >
+        <CollapsibleSection title="Richieste chiusura manuale" sectionId="manual-closures" ref={manualRequestsSectionRef} className="homeadmin-card homeadmin-card-primary homeadmin-manual-closures">
           <div className="admin-section-title-row">
-            <h2 className="homeadmin-section-title">
-              Richieste chiusura manuale
-            </h2>
+
 
             <div className="admin-inline-actions">
               <button
@@ -2462,14 +2462,14 @@ export default function Home_admin() {
               </table>
             </div>
           )}
-        </section>
+        </CollapsibleSection>
 
-        <section
+        <CollapsibleSection title="Riepilogo periodo utente" sectionId="user-summary"
           ref={singleSummarySectionRef}
           className={`homeadmin-card ${highlightSingleSummary ? "homeadmin-card-highlight" : ""
             }`}
         >
-          <h2 className="homeadmin-section-title">Riepilogo periodo utente</h2>
+
 
           <div className="homeadmin-form">
             <div className="homeadmin-form-row">
@@ -2664,6 +2664,7 @@ export default function Home_admin() {
                             {record.durationSec != null
                               ? formatDuration(record.durationSec)
                               : "-"}
+                            <RecordBreakSummary record={record} />
                           </td>
                           <td>
                             <span
@@ -2687,10 +2688,10 @@ export default function Home_admin() {
               )}
             </div>
           )}
-        </section>
+        </CollapsibleSection>
 
-        <section className="homeadmin-card homeadmin-card--multi-summary">
-          <h2 className="homeadmin-section-title">Riepilogo multiutente</h2>
+        <CollapsibleSection title="Riepilogo multiutente" sectionId="multi-summary" className="homeadmin-card">
+
 
           <div className="homeadmin-form">
             <div className="homeadmin-form-row">
@@ -2918,10 +2919,11 @@ export default function Home_admin() {
                                           <td>
                                             {record.effectiveDurationHHMMSS ||
                                               formatDuration(
-                                                record.effectiveDurationSec ||
-                                                record.durationSec ||
+                                                record.effectiveDurationSec ??
+                                                record.durationSec ??
                                                 0
                                               )}
+                                            <RecordBreakSummary record={record} />
                                           </td>
                                           <td>
                                             <span
@@ -2955,10 +2957,10 @@ export default function Home_admin() {
 
           {multiSummaryShouldShowEmptyState &&
             renderEmptyState("Nessun dato disponibile nel periodo selezionato.")}
-        </section>
+        </CollapsibleSection>
 
-        <section className="homeadmin-card homeadmin-card--daily-detail">
-          <h2 className="homeadmin-section-title">Dettaglio giornaliero</h2>
+        <CollapsibleSection title="Dettaglio giornaliero" sectionId="daily-detail" className="homeadmin-card">
+
 
           <div className="homeadmin-grid">
             <div className="homeadmin-left-column">
@@ -3130,6 +3132,7 @@ export default function Home_admin() {
                                 {record.durationSec != null
                                   ? formatDuration(record.durationSec)
                                   : "-"}
+                            <RecordBreakSummary record={record} />
                               </td>
                               <td>
                                 <span
@@ -3141,6 +3144,7 @@ export default function Home_admin() {
                                 </span>
                               </td>
                               <td>
+                                <AdminRecordEditor record={record} baseUrl={BASE_URL} handleSessionExpired={handleSessionExpired} navigate={navigate} onSaved={refreshAnalyticsAfterAdminAction} />
                                 {canCancelTimeRecord(record) ? (
                                   <button
                                     type="button"
@@ -3175,12 +3179,12 @@ export default function Home_admin() {
               )}
             </div>
           </div>
-        </section>
+        </CollapsibleSection>
 
-        <section className="homeadmin-card homeadmin-settings-card homeadmin-card--settings">
+        <CollapsibleSection title="Impostazioni ferie/PIR" sectionId="settings" className="homeadmin-card homeadmin-settings-card">
           <div className="homeadmin-section-header">
             <div>
-              <h2>Impostazioni ferie/PIR</h2>
+
               <p>
                 Definisci quanti giorni prima un utente deve inviare una richiesta ferie o PIR.
               </p>
@@ -3197,7 +3201,7 @@ export default function Home_admin() {
                 step="1"
                 value={leaveMinAdvanceDays}
                 onChange={(event) => setLeaveMinAdvanceDays(event.target.value)}
-                disabled={settingsLoading || settingsSaving}
+                disabled={isRemoteShowcase || settingsLoading || settingsSaving}
               />
             </label>
 
@@ -3207,7 +3211,7 @@ export default function Home_admin() {
                 rows="4"
                 value={leaveNotificationEmails}
                 onChange={(event) => setLeaveNotificationEmails(event.target.value)}
-                disabled={settingsLoading || settingsSaving}
+                disabled={isRemoteShowcase || settingsLoading || settingsSaving}
                 placeholder={"admin@example.com\nhr@example.com"}
               />
               <small>
@@ -3218,7 +3222,7 @@ export default function Home_admin() {
             <button
               type="submit"
               className="homeadmin-btn homeadmin-btn-primary"
-              disabled={settingsLoading || settingsSaving}
+              disabled={isRemoteShowcase || settingsLoading || settingsSaving}
             >
               {settingsSaving ? "Salvataggio..." : "Salva impostazioni"}
             </button>
@@ -3235,7 +3239,7 @@ export default function Home_admin() {
           {settingsMsg && (
             <div className="homeadmin-alert success">{settingsMsg}</div>
           )}
-        </section>
+        </CollapsibleSection>
 
         <div className="homeadmin-footer-actions">
           <button
@@ -3247,5 +3251,6 @@ export default function Home_admin() {
         </div>
       </div>
     </div>
+    </SectionPreferencesProvider>
   );
 }

@@ -23,3 +23,13 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Local configuration, backups and generated review evidence stay on this machine.
+.env.*
+*.backup-*
+analisi-responsive-*.txt
+diff-home-user-pausa.txt
+tests/visual-check/evidence/
+
+# Dedicated remote Showcase build artifacts
+dist-showcase

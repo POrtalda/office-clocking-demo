@@ -1,0 +1,80 @@
+{
+  "purpose": "MANUAL REVIEW ONLY - no cloud changes or deploy actions",
+  "repository": "https://github.com/POrtalda/office-clocking-demo.git",
+  "sourceBranch": "feature/demo-november-showcase",
+  "workingTreeBase": "2341fd46ac68c13b4e7166a93d6fe9df5ca373ef",
+  "netlify": {
+    "publicOrigin": "https://office-clocking-demo.netlify.app",
+    "siteId": null,
+    "observedProductionBranch": "main",
+    "intendedProductionBranch": "main",
+    "baseDirectory": "frontend",
+    "buildCommand": "npm run build:showcase",
+    "publishDirectory": "dist-showcase",
+    "intendedAutoPublish": false,
+    "currentDeployIdForRollback": null,
+    "stagingArtifactBranch": "prepare/showcase-20261113",
+    "bindingEvidence": "User-confirmed: main production, build active, production-only branch deploys, PR previews enabled; site ID still unverified.",
+    "autoBuildVerified": true,
+    "branchDeploysVerified": true,
+    "deployPreviewsVerified": true,
+    "observedBuildStatus": "active",
+    "observedBranchDeploys": "production-only",
+    "observedDeployPreviews": "any-pr-to-production-or-branch-deploy-branches"
+  },
+  "render": {
+    "publicOrigin": "https://office-clocking-backend-demo.onrender.com",
+    "originEvidence": "Public production JS asset index-BNiyclTc.js; HTTP 200; SHA-256 964bb261f7ff5ea9e86cbe24d232877b89790511f27cad87fba880f8d1a70769",
+    "serviceId": "srv-d7tn3breo5us738b14ag",
+    "demoOnlyConfirmed": false,
+    "environmentGroupsIsolated": false,
+    "observedDeployBranch": "main",
+    "intendedDeployBranch": "main",
+    "rootDirectory": "backend",
+    "buildCommand": "npm ci",
+    "startCommand": "node scripts/startRemoteShowcase.js",
+    "healthCheckPath": "/healthz",
+    "intendedAutoDeploy": "off",
+    "currentDeployIdForRollback": null,
+    "validationBranch": "prepare/showcase-20261113",
+    "observedAutoDeploy": "off",
+    "observedStartCommand": "npm start",
+    "bindingEvidence": "Service ID and auto-deploy OFF confirmed by user on 2026-11-11; shared environment groups and Client 1 isolation still require dashboard verification."
+  },
+  "atlas": {
+    "database": "office_clocking_showcase_20261113",
+    "newProjectRequired": true,
+    "newClusterRequired": true,
+    "newRuntimeUserRequired": true,
+    "newSeedUserRequired": true,
+    "oldDemoDatabaseMustRemainUntouched": true,
+    "seedCompleted": true,
+    "marker": "ready",
+    "host": "showcasecluster.xed8r0t.mongodb.net",
+    "expectedCounts": {
+      "users": 16,
+      "records": 284,
+      "leaves": 2
+    }
+  },
+  "approvalGates": [
+    "Confirm IDs and demo-only ownership",
+    "Privately capture rollback settings and recoverable deploys",
+    "Authorize freeze of demo-only triggers",
+    "Seed completed: do not repeat",
+    "Authorize preparation commit/branch transfer only to dedicated demo repository",
+    "Authorize temporary Render validation branch/configuration and exact deploy SHA",
+    "Authorize Netlify artifact publication on existing verified site",
+    "Authorize final main promotion only after complete Showcase readiness/collaudo",
+    "Authorize each rollback or later trigger reactivation separately"
+  ],
+  "blockedUntilVerified": [
+    "Netlify site ID and deploy artifact for rollback",
+    "Render independence from Client 1 and isolated environment groups",
+    "Current deploy IDs and private rollback snapshots",
+    "Existing hooks, shared environment groups, previews and all trigger consumers"
+  ],
+  "localOriginDoNotPublish": "https://github.com/POrtalda/office_clocking.git",
+  "transferStrategy": "Prepare a reviewed snapshot in a future isolated clone of the dedicated demo repository; never push or retarget this worktree origin.",
+  "observedDedicatedDemoMain": "ef42d576f49453cf7e798a545c1e790a874be2a9"
+}

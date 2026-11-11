@@ -1,0 +1,15 @@
+# Git target: POrtalda/office-clocking-demo, production branch main (user-confirmed).
+# Never push/retarget the local principal origin POrtalda/office_clocking.
+# Planned target: existing office-clocking-demo.netlify.app; verify its site ID first.
+# Reference only: applying settings or publishing requires per-step authorization.
+# Reference only. The root netlify.toml is the active Showcase config and disables branch/PR builds.
+# Manual upload of dist-showcase uses the generated _headers and _redirects.
+[build]
+  base = "frontend"
+  command = "npm run build:showcase"
+  publish = "dist-showcase"
+[build.environment]
+  NODE_VERSION = "22"
+# Set VITE_API_URL=https://office-clocking-backend-demo.onrender.com only after Render isolation is verified.
+# No JWT, Atlas or SMTP secrets here.
+# Prefer manual deploy; disable automatic publishes and deploy previews.

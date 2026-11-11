@@ -5,7 +5,7 @@ const User = require("../models/User");
 const router = express.Router();
 
 router.get("/login-users", async (req, res) => {
-  if (process.env.DEMO_MODE !== "true") {
+  if (process.env.DEMO_MODE !== "true" || process.env.APP_ENV === "showcase") {
     return res.status(404).json({ message: "Route non trovata." });
   }
 

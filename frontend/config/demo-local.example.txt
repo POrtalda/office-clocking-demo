@@ -1,0 +1,4 @@
+# Nessun segreto: utilizzato solo con il server Vite --mode demo-local.
+VITE_API_URL=http://127.0.0.1:5055
+VITE_DEMO_MODE=true
+VITE_DEMO_LOCAL_GPS_BYPASS=true

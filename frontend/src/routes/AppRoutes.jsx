@@ -25,18 +25,18 @@ function AuthLoadingScreen() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        background: "#f3f4f6",
+        background: "var(--oc-page, #f3f4f6)",
         padding: "1.5rem",
       }}
     >
       <div
         style={{
-          background: "#ffffff",
+          background: "var(--oc-surface, #ffffff)",
           padding: "1rem 1.25rem",
           borderRadius: "0.75rem",
           boxShadow: "0 8px 20px rgba(0, 0, 0, 0.08)",
           fontWeight: 600,
-          color: "#374151",
+          color: "var(--oc-text, #374151)",
         }}
       >
         Caricamento autenticazione...

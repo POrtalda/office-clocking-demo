@@ -1,0 +1,6 @@
+.time-record-details { font-size: .85rem; white-space: normal; overflow-wrap: anywhere; }
+.time-record-details:empty { display: none; }
+.time-record-details p { margin: 6px 0; }
+.time-record-details summary { cursor: pointer; color: #075985; margin-top: 8px; }
+.time-record-details ol { margin: 8px 0; padding-left: 20px; }
+.time-record-details li { padding-bottom: 8px; }

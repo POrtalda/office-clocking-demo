@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { AuthContext } from "./auth-context";
+import AccountThemeProvider from "../components/Theme/AccountThemeProvider";
 
 export function AuthProvider({ children }) {
   // Utente autenticato corrente
@@ -241,7 +242,7 @@ export function AuthProvider({ children }) {
         handleSessionExpired,
       }}
     >
-      {children}
+      <AccountThemeProvider user={user} authLoading={authLoading}>{children}</AccountThemeProvider>
     </AuthContext.Provider>
   );
 }

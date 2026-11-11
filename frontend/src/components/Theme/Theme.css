@@ -1,0 +1,144 @@
+
+:root { --oc-page: #f3f4f6; --oc-surface: #fff; --oc-text: #374151; }
+html[data-office-theme="dark"] { --oc-page: #0b1220; --oc-surface: #111e30; --oc-text: #e2e8f0; --oc-muted: #b6c5d8; --oc-border: #3c506a; --oc-raised: #182a42; color-scheme: dark; background: var(--oc-page); }
+.theme-loading { display: grid; place-items: center; min-height: 100vh; background: var(--oc-page); color: var(--oc-text); font-weight: 600; }
+.home-user-theme-actions { display: flex; justify-content: flex-end; margin-bottom: 12px; }
+.theme-toggle { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; max-width: 100%; padding: 9px 12px; border: 1px solid #94a3b8; border-radius: 12px; background: #f8fafc; color: #334155; font: inherit; font-size: .85rem; font-weight: 650; cursor: pointer; }
+.theme-toggle svg { flex: 0 0 20px; }
+.theme-toggle:hover { background: #e2e8f0; border-color: #64748b; }
+.theme-toggle:focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+
+html[data-office-theme="dark"] body { background:var(--oc-page);color:var(--oc-text); }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) { background:var(--oc-page);color:var(--oc-text); }
+
+html[data-office-theme="dark"] :is(.home-user-box,.homeadmin-box,.storico-box,.admin-modal,.pwa-update) { background:var(--oc-surface);border-color:var(--oc-border);color:var(--oc-text);box-shadow:0 16px 40px #0004; }
+
+html[data-office-theme="dark"] :is(.home-user-box,.homeadmin-demo-panel,.homeadmin-quick-summary-card)::before { background:none; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is([data-collapsible-section],.homeadmin-card,.homeadmin-form,.homeadmin-stat-card,.homeadmin-demo-panel,.homeadmin-demo-guide,.homeadmin-demo-panel-icon,.homeadmin-demo-panel-grid span,.homeadmin-demo-panel-note,.homeadmin-demo-panel-kicker,.homeadmin-quick-summary-item,.homeadmin-contextual-hint,.homeadmin-quick-summary-icon,.homeadmin-daily-tile,.homeadmin-daily-list,.homeadmin-daily-header-count,.home-user-primary-action,.home-user-day-summary,.home-user-status-card,.home-user-warning-card,.home-user-demo-guide,.home-user-demo-info-card,.home-user-contextual-hint,.home-user-demo-intro,.home-user-leave-item,.home-user-work-summary,.storico-calendar-wrap,.storico-rangebar,.storico-record-card,.storico-break-details,.storico-total) { background:var(--oc-raised);color:var(--oc-text);border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(h1,h2,h3,h4,p,label,small,strong,dt,dd,li,summary):not(.office-clock *) { color:var(--oc-text); }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is([class*="-title"],[class*="-label"],[class*="-text"],[class*="-note"],[class*="-kicker"]):not(.office-clock *) { color:var(--oc-text); }
+
+html[data-office-theme="dark"] :is(.home-user-helper-text,.home-user-muted-text,.home-user-loading,.home-user-leave-note,.homeadmin-muted-text,.homeadmin-subtitle,.homeadmin-stat-label,.manual-requests-note,.homeadmin-settings-form small,.homeadmin-quick-summary-item small,.storico-user) { color:var(--oc-muted); }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(input,select,textarea) { background:#0b1728;border-color:#536b89;color:#e2e8f0;color-scheme:dark; }
+
+html[data-office-theme="dark"] :is(input,textarea)::placeholder { color:#a5b6cd;opacity:1; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(input,select,textarea):disabled { background:#24334a;color:#b6c5d8; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) a { color:#93c5fd; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(.collapsible-section-trigger,.collapsible-section-badge) { color:#e2e8f0;border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] .homeadmin-container [data-collapsible-section] > .collapsible-section-heading > .collapsible-section-trigger { background:#182a42;border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] .homeadmin-container [data-collapsible-section]:hover { border-color:#7194c1;box-shadow:0 6px 18px #0004; }
+
+html[data-office-theme="dark"] .homeadmin-container [data-collapsible-section]:hover > .collapsible-section-heading > .collapsible-section-trigger { background:#223b5a; }
+
+html[data-office-theme="dark"] .collapsible-section-arrow { color:#93c5fd; }
+
+html[data-office-theme="dark"] :is(.theme-toggle,.homeadmin-btn-secondary,.btn-secondary) { background:#263e5b;color:#f1f5f9;border-color:#6b85a7; }
+
+html[data-office-theme="dark"] :is(.theme-toggle,.homeadmin-btn-secondary,.btn-secondary):hover:not(:disabled) { background:#345473; }
+
+html[data-office-theme="dark"] :is(.homeadmin-btn-primary,.btn-primary) { background:#1d4ed8;color:#fff; }
+
+html[data-office-theme="dark"] .homeadmin-btn-success { background:#166534;color:#fff; }
+
+html[data-office-theme="dark"] :is(.homeadmin-btn-danger,.btn-logout,.btn-danger) { background:#b91c1c;color:#fff; }
+
+html[data-office-theme="dark"] :is(button,input,select,textarea,summary,a):focus-visible { outline:3px solid #93c5fd;outline-offset:2px; }
+
+html[data-office-theme="dark"] :is(.homeadmin-table-wrapper,.homeadmin-table,.homeadmin-table tbody,.homeadmin-table td) { background:var(--oc-surface);border-color:var(--oc-border);color:var(--oc-text);scrollbar-color:#6b85a7 #182a42; }
+
+html[data-office-theme="dark"] .homeadmin-table th { background:#223b5a;color:#f1f5f9;border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] .homeadmin-table tbody tr:nth-child(even) td { background:#16273d; }
+
+html[data-office-theme="dark"] .homeadmin-table tbody tr:hover td { background:#223b5a; }
+
+html[data-office-theme="dark"] :is(.homeadmin-results-block,.homeadmin-daily-list li) { border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] :is(.status-badge,.leave-status-neutral) { background:#304159;color:#e2e8f0;border-color:#6b85a7; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(.msg-ok,.homeadmin-alert.success,.status-approved,.status-active,.status-closed,.leave-status-approved) { background:#113b31;color:#a7f3d0;border-color:#36816b; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(.msg-warning,.homeadmin-alert.warning,.home-user-warning-card,.home-user-primary-action--manual-fix,.homeadmin-quick-summary-item--warning,.status-pending,.status-open,.leave-status-pending) { background:#3e301a;color:#fde68a;border-color:#99743a; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(.msg-error,.homeadmin-alert.error,.status-rejected,.status-inactive,.status-cancelled,.leave-status-rejected,.homeadmin-daily-header-count.is-missing) { background:#461f2b;color:#fecdd3;border-color:#a5526a; }
+
+html[data-office-theme="dark"] :is(.home-user-container, .homeadmin-container, .storico-container) :is(.msg-error,.msg-warning,.msg-ok,.homeadmin-alert,.home-user-warning-card) :is(p,h3,strong,small) { color:inherit; }
+
+html[data-office-theme="dark"] :is(.homeadmin-error-text,.home-user-warning-text) { color:#fda4af; }
+
+html[data-office-theme="dark"] :is(.admin-break-summary,.time-record-details summary,.storico-record-card .storico-net-duration) { color:#a5e5fa; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar { background:var(--oc-surface);border-color:var(--oc-border);color:var(--oc-text); }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar :is(.react-calendar__navigation button,.react-calendar__tile) { color:#e2e8f0;background:transparent; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar :is(.react-calendar__navigation button,.react-calendar__tile):enabled:hover { background:#294666; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .react-calendar__month-view__weekdays { color:#b6c5d8; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .react-calendar__month-view__days__day--weekend { color:#fda4af; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .react-calendar__month-view__days__day--neighboringMonth { color:#9cacbf; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .react-calendar__tile--now { background:#57411d;color:#fef3c7; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .calendar-day-has-leave { background:#461f2b !important; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar .react-calendar__tile--active { background:#1d4ed8 !important;color:#fff !important; }
+
+html[data-office-theme="dark"] :is(.homeadmin-container,.storico-container) .react-calendar :is(button:disabled,.react-calendar__tile:disabled) { background:#24334a;color:#a5b6cd; }
+
+html[data-office-theme="dark"] .admin-modal-overlay { background:#000b; }
+
+html[data-office-theme="dark"] .pwa-update :is(p,strong) { color:var(--oc-text); }
+
+@media (prefers-reduced-motion: reduce) { .theme-toggle { transition:none; } }
+
+html[data-office-theme="dark"] .status-badge.success { background:#113b31;color:#a7f3d0;border-color:#36816b; }
+html[data-office-theme="dark"] .status-badge.info { background:#183962;color:#bfdbfe;border-color:#5279a7; }
+html[data-office-theme="dark"] .status-badge.warning { background:#3e301a;color:#fde68a;border-color:#99743a; }
+html[data-office-theme="dark"] .status-badge.danger { background:#461f2b;color:#fecdd3;border-color:#a5526a; }
+html[data-office-theme="dark"] .homeadmin-daily-tile--entered strong { color:#a7f3d0; }
+html[data-office-theme="dark"] .homeadmin-daily-tile--missing strong { color:#fecdd3; }
+
+html[data-office-theme="dark"] .storico-results { background:var(--oc-raised);color:var(--oc-text);border-color:var(--oc-border); }
+
+html[data-office-theme="dark"] .home-user-break-action { background:var(--oc-raised);color:var(--oc-text);border-color:var(--oc-border); }
+
+/* Manual closure requests: explicit cell text colors must follow the dark palette.
+   Scope these overrides so shared manual-request classes in other tables stay unchanged. */
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-table th {
+  background: #223b5a;
+  color: #f1f5f9;
+  border-color: var(--oc-border);
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-table td,
+html[data-office-theme="dark"] .homeadmin-manual-closures :is(.manual-request-user, .manual-request-datetime, .manual-request-duration, .manual-request-note) {
+  color: var(--oc-text);
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .manual-request-subtext {
+  color: var(--oc-muted);
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-table tbody tr:nth-child(odd) td {
+  background: var(--oc-surface);
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-table tbody tr:nth-child(even) td {
+  background: #16273d;
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-table tbody :is(tr:hover, tr:focus-within) td {
+  background: #223b5a;
+}
+html[data-office-theme="dark"] .homeadmin-manual-closures .homeadmin-btn:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+}

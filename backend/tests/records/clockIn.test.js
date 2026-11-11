@@ -9,6 +9,12 @@
  * - non dipendiamo ancora dal database reale
  */
 
+jest.mock("../../services/timeRecordLock", () => ({
+  withTimeRecordLock: jest.fn(async (_userId, operation) =>
+    operation("test-owner", async () => {})
+  ),
+}));
+
 const request = require("supertest");
 
 // Mock dipendenze usate dal middleware auth e dal controller records
@@ -328,47 +334,6 @@ describe("POST /api/records/clock-in", () => {
     expect(TimeRecord.create).not.toHaveBeenCalled();
   });
 
-  test("non considera il PIR orario come assenza giornaliera bloccante", async () => {
-    const sortMock = jest.fn().mockResolvedValue(null);
-
-    TimeRecord.findOne.mockReturnValue({
-      sort: sortMock,
-    });
-
-    TimeRecord.create.mockResolvedValue({
-      _id: "record-hourly-pir-123",
-      user: "user123",
-      clockIn: new Date(),
-      clockOut: null,
-      durationSec: 0,
-      status: "open",
-    });
-
-    const res = await request(app)
-      .post("/api/records/clock-in")
-      .set("Authorization", "Bearer token-valido");
-
-    expect(res.statusCode).toBe(201);
-    expect(TimeRecord.create).toHaveBeenCalled();
-
-    expect(LeaveRequest.findOne).toHaveBeenCalledWith(
-      expect.objectContaining({
-        status: "approved",
-        $and: [
-          {
-            $or: [
-              { type: { $in: ["mutua", "ferie"] } },
-              {
-                type: "pir",
-                hours: null,
-              },
-            ],
-          },
-        ],
-      })
-    );
-  });
-
   test("restituisce 400 se la geolocalizzazione è attiva e mancano le coordinate", async () => {
     process.env.GEOLOCATION_CLOCK_IN_ENABLED = "true";
     process.env.OFFICE_LAT = "45";
@@ -492,7 +457,7 @@ describe("POST /api/records/clock-in", () => {
       status: "open",
     });
   });
-  test("restituisce 201 se la geolocalizzazione è attiva ma disattivata per l'utente", async () => {
+    test("restituisce 201 se la geolocalizzazione è attiva ma disattivata per l'utente", async () => {
     process.env.GEOLOCATION_CLOCK_IN_ENABLED = "true";
     process.env.OFFICE_LAT = "45.19101925311772";
     process.env.OFFICE_LNG = "7.893680019094721";

@@ -1,5 +1,4 @@
-﻿import { Link } from "react-router-dom";
-import DemoBanner from "../DemoBanner/DemoBanner";
+import { Link } from "react-router-dom";
 import "./FeaturesPage.css";
 
 export default function FeaturesPage() {
@@ -54,8 +53,6 @@ export default function FeaturesPage() {
 
   return (
     <>
-      <DemoBanner />
-
       <main className="features-page">
         <section className="features-hero">
           <div className="features-badge">Progetto full-stack React + Node.js</div>

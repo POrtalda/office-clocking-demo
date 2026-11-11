@@ -1,4 +1,11 @@
+import ThemeToggle from "../Theme/ThemeToggle";
+import SectionPreferencesProvider from "../CollapsibleSection/SectionPreferencesProvider";
+import OfficeClock from "../OfficeClock/OfficeClock";
+import CollapsibleSection from "../CollapsibleSection/CollapsibleSection";
 import "./Home-user.css";
+import { isRemoteShowcaseGpsCandidate, acceptsRemoteGpsPolicy, getRemoteClockLocationPayload, REMOTE_GPS_NOTICE } from "../../utils/remoteShowcaseGps.js";
+import { isLocalDemoGpsCandidate, getClockLocationPayload, getOffsiteClockPayload } from "../../utils/localDemoGps";
+import { getClosedWorkSummary } from "../../utils/workSummary";
 import {
   useCallback,
   useContext,
@@ -14,6 +21,7 @@ import {
   formatDateIT,
   formatDateTimeIT,
   formatTimeIT,
+  formatDuration,
   toRomeYMD,
 } from "../../utils/dateUtils";
 
@@ -118,14 +126,53 @@ export default function Home_user() {
   const { logout, user, handleSessionExpired } = useContext(AuthContext);
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const isRemoteShowcase = import.meta.env.VITE_SHOWCASE_REMOTE === "true";
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
   const logoutTimerRef = useRef(null);
+  const [canSkipGps, setCanSkipGps] = useState(false);
+  const [workLocation, setWorkLocation] = useState("office");
+  const [offsiteReason, setOffsiteReason] = useState("");
+  const localDemoGpsCandidate = isLocalDemoGpsCandidate(import.meta.env, window.location.hostname);
+  const remoteDemoGpsCandidate = isRemoteShowcaseGpsCandidate(import.meta.env, window.location.protocol);
+  const [remoteGpsAccount, setRemoteGpsAccount] = useState(null);
+  const remoteGpsAuthorized = remoteDemoGpsCandidate && Boolean(user) && remoteGpsAccount === user;
+  const gpsOmitted = canSkipGps || remoteGpsAuthorized;
+  const [loadingGpsPolicy, setLoadingGpsPolicy] = useState(localDemoGpsCandidate || remoteDemoGpsCandidate);
+
+  useEffect(() => {
+    let active = true;
+    setCanSkipGps(false);
+    setRemoteGpsAccount(null);
+    if (!user || (!localDemoGpsCandidate && !remoteDemoGpsCandidate)) { setLoadingGpsPolicy(false); return; }
+    setLoadingGpsPolicy(true);
+    void (async () => {
+      try {
+        const response = await authFetch(`${BASE_URL}/api/records/gps-policy`, {}, { handleSessionExpired, navigate });
+        if (!response?.ok) return;
+        const policy = await response.json();
+        if (active) {
+          setCanSkipGps(localDemoGpsCandidate && policy.canSkipGps === true);
+          setRemoteGpsAccount(acceptsRemoteGpsPolicy(policy, remoteDemoGpsCandidate) ? user : null);
+        }
+      } catch { /* Fail closed: unavailable policy keeps the existing GPS flow. */ }
+      finally { if (active) setLoadingGpsPolicy(false); }
+    })();
+    return () => { active = false; };
+  }, [BASE_URL, handleSessionExpired, localDemoGpsCandidate, remoteDemoGpsCandidate, navigate, user]);
+
+  const clockLocationPayload = ({ forBreak = false } = {}) => {
+    if ((!forBreak || isRemoteShowcase) && workLocation === "offsite") return Promise.resolve(getOffsiteClockPayload(offsiteReason));
+    if (remoteDemoGpsCandidate) return getRemoteClockLocationPayload({ authorized: remoteGpsAuthorized, requestPosition: requestCurrentPosition });
+    return getClockLocationPayload({ allowWithoutGps: canSkipGps && localDemoGpsCandidate, requestPosition: requestCurrentPosition });
+  };
 
   const [showLogoutMessage, setShowLogoutMessage] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   const [entrata, setEntrata] = useState(null);
   const [uscita, setUscita] = useState(null);
+  const [todayRecords, setTodayRecords] = useState([]);
+  const todayWork = useMemo(() => getClosedWorkSummary(todayRecords), [todayRecords]);
 
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [isStamping, setIsStamping] = useState(false);
@@ -144,9 +191,6 @@ export default function Home_user() {
   );
   const [leaveEndDate, setLeaveEndDate] = useState(() => toRomeYMD(new Date()));
   const [leaveNote, setLeaveNote] = useState("");
-  const [pirMode, setPirMode] = useState("fullDay");
-  const [pirStartTime, setPirStartTime] = useState("");
-  const [pirHours, setPirHours] = useState(1);
   const [leaveRequestLoading, setLeaveRequestLoading] = useState(false);
   const feedbackMessageRef = useRef(null);
 
@@ -164,13 +208,7 @@ export default function Home_user() {
   const [leaveMinAdvanceDays, setLeaveMinAdvanceDays] = useState(null);
 
   const hasTodayApprovedLeave = useMemo(() => {
-    const isApproved =
-      String(todayLeave?.status || "").toLowerCase() === "approved";
-
-    const isHourlyPir =
-      todayLeave?.type === "pir" && todayLeave?.hours != null;
-
-    return isApproved && !isHourlyPir;
+    return String(todayLeave?.status || "").toLowerCase() === "approved";
   }, [todayLeave]);
 
   const todayLeaveLabel = useMemo(() => {
@@ -180,6 +218,11 @@ export default function Home_user() {
       todayLeave
     ).toLowerCase()}`;
   }, [todayLeave]);
+
+  const activeBreak = Boolean(
+    openRecord?.status === "open" &&
+    (openRecord.breaks || []).some(b => !b.endAt)
+  );
 
   const canClockOut = !!entrata && !uscita;
   const hasCompleteSession = !!entrata && !!uscita;
@@ -299,7 +342,7 @@ export default function Home_user() {
     }
 
     if (leaveType === "pir") {
-      return "Il PIR richiede approvazione admin e può essere richiesto per l'intera giornata oppure per un numero specifico di ore.";
+      return "Il PIR richiede approvazione admin e viene gestito come richiesta giornaliera.";
     }
 
     return selectedLeaveOption?.description || "Seleziona il tipo di assenza da richiedere.";
@@ -416,6 +459,7 @@ export default function Home_user() {
   ]);
 
   const resetStampState = useCallback(() => {
+    setTodayRecords([]);
     setEntrata(null);
     setUscita(null);
   }, []);
@@ -473,6 +517,7 @@ export default function Home_user() {
   const applyTodayRecords = useCallback(
     (records) => {
       const safeRecords = Array.isArray(records) ? records : [];
+      setTodayRecords(safeRecords);
 
       const activeRecords = safeRecords.filter(
         (record) => String(record?.status || "").toLowerCase() !== "cancelled"
@@ -485,7 +530,7 @@ export default function Home_user() {
         return;
       }
 
-      const lastCompleteRecord = activeRecords.find(
+      const lastCompleteRecord = [...activeRecords].reverse().find(
         (r) => r.clockIn && r.clockOut
       );
       if (lastCompleteRecord) {
@@ -782,6 +827,7 @@ export default function Home_user() {
   }
 
   function getGeolocationErrorMessage(error) {
+    if (error?.code === "OFFSITE_REASON_REQUIRED") return error.message;
     if (error?.code === "GEOLOCATION_UNSUPPORTED") {
       return "Il tuo browser non supporta la geolocalizzazione.";
     }
@@ -834,15 +880,15 @@ export default function Home_user() {
   async function handleClockIn() {
     setUiMsg({
       type: "warning",
-      text: "Per registrare l'entrata è necessario verificare che tu sia in ufficio.",
+      text: workLocation === "offsite" ? "Registrazione entrata fuori sede con motivazione." : gpsOmitted ? "Registrazione entrata nella demo senza GPS." : "Per registrare l'entrata è necessario verificare che tu sia in ufficio.",
     });
 
     setStampingAction("clockIn");
 
-    let position;
+    let locationPayload;
 
     try {
-      position = await requestCurrentPosition();
+      locationPayload = await clockLocationPayload();
     } catch (err) {
       console.error("Errore geolocalizzazione:", err);
 
@@ -854,12 +900,6 @@ export default function Home_user() {
       return;
     }
 
-    const location = {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-      accuracy: position.coords.accuracy,
-    };
-
     const res = await authFetch(
       `${BASE_URL}/api/records/clock-in`,
       {
@@ -867,9 +907,7 @@ export default function Home_user() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          location,
-        }),
+        body: JSON.stringify(locationPayload),
       },
       { handleSessionExpired, navigate }
     );
@@ -905,15 +943,15 @@ export default function Home_user() {
   async function handleClockOut() {
     setUiMsg({
       type: "warning",
-      text: "Per registrare l'uscita è necessario verificare che tu sia in ufficio.",
+      text: workLocation === "offsite" ? "Registrazione uscita fuori sede con motivazione." : gpsOmitted ? "Registrazione uscita nella demo senza GPS." : "Per registrare l'uscita è necessario verificare che tu sia in ufficio.",
     });
 
     setStampingAction("clockOut");
 
-    let position;
+    let locationPayload;
 
     try {
-      position = await requestCurrentPosition();
+      locationPayload = await clockLocationPayload();
     } catch (err) {
       console.error("Errore geolocalizzazione:", err);
 
@@ -925,12 +963,6 @@ export default function Home_user() {
       return;
     }
 
-    const location = {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-      accuracy: position.coords.accuracy,
-    };
-
     const res = await authFetch(
       `${BASE_URL}/api/records/clock-out`,
       {
@@ -938,9 +970,7 @@ export default function Home_user() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          location,
-        }),
+        body: JSON.stringify(locationPayload),
       },
       { handleSessionExpired, navigate }
     );
@@ -972,6 +1002,61 @@ export default function Home_user() {
     await reloadAllStatuses();
   }
 
+
+  async function handleBreak(ending) {
+    if (!user || !canClockOut || isStamping || loadingGpsPolicy ||
+        isStampBlocked || leaveRequestLoading ||
+        loadingOpenRecord || loadingStatus) return;
+
+    setIsStamping(true);
+    setStampingAction(ending ? "breakEnd" : "breakStart");
+    setUiMsg(null);
+
+    try {
+      const locationPayload = await clockLocationPayload({ forBreak: true });
+
+      const res = await authFetch(
+        `${BASE_URL}/api/records/${ending ? "break-end" : "break-start"}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(locationPayload),
+        },
+        { handleSessionExpired, navigate }
+      );
+
+      if (!res) return;
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setUiMsg({
+          type: "error",
+          text: data.message || "Registrazione pausa fallita.",
+        });
+        return;
+      }
+
+      setUiMsg({
+        type: "ok",
+        text: data.message || "Pausa registrata.",
+      });
+
+      await reloadAllStatuses();
+    } catch (err) {
+      console.error("Errore pausa:", err);
+      setUiMsg({
+        type: "error",
+        text: err?.code
+          ? getGeolocationErrorMessage(err)
+          : "Errore durante la registrazione della pausa.",
+      });
+    } finally {
+      setIsStamping(false);
+      setStampingAction("");
+    }
+  }
+
   function scrollToFeedbackMessage() {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -992,15 +1077,6 @@ export default function Home_user() {
     if (leaveRequestLoading || isStamping) return;
 
     const isFerieRange = leaveType === "ferie";
-    const isHourlyPir = leaveType === "pir" && pirMode === "hourly";
-
-    if (isHourlyPir && !pirStartTime) {
-      setLeaveRequestFeedback({
-        type: "warning",
-        text: "Seleziona l'orario di inizio del PIR.",
-      });
-      return;
-    }
 
     if (!leaveType || !leaveStartDate || (isFerieRange && !leaveEndDate)) {
       setLeaveRequestFeedback({
@@ -1056,17 +1132,10 @@ export default function Home_user() {
                 endDate: leaveEndDate,
                 note: leaveNote.trim(),
               }
-              : isHourlyPir
-                ? {
-                  date: leaveStartDate,
-                  startTime: pirStartTime,
-                  hours: pirHours,
-                  note: leaveNote.trim(),
-                }
-                : {
-                  date: leaveType === "mutua" ? toRomeYMD(new Date()) : leaveStartDate,
-                  note: leaveNote.trim(),
-                }
+              : {
+                date: leaveType === "mutua" ? toRomeYMD(new Date()) : leaveStartDate,
+                note: leaveNote.trim(),
+              }
           ),
         },
         { handleSessionExpired, navigate }
@@ -1179,6 +1248,7 @@ export default function Home_user() {
   }
 
   async function handleStamp() {
+    if (loadingGpsPolicy) return;
     if (
       !user ||
       loadingStatus ||
@@ -1211,6 +1281,13 @@ export default function Home_user() {
       }
 
       if (canClockOut) {
+        if (activeBreak) {
+          setUiMsg({
+            type: "warning",
+            text: "Termina la pausa prima di registrare l'uscita.",
+          });
+          return;
+        }
         await handleClockOut();
         return;
       }
@@ -1239,10 +1316,14 @@ export default function Home_user() {
   if (!user) return null;
 
   return (
+    <SectionPreferencesProvider user={user} page="home-user">
     <div className="home-user-container">
       <div className="home-user-box">
         <div className="home-user-header">
+          <div className="home-user-theme-actions"><ThemeToggle /></div>
           <h2 className="home-user-title">Benvenuto {user.username}!</h2>
+
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p>Showcase online · dati dimostrativi · email disabilitate</p>}
 
           {isDemoMode && (
             <p className="home-user-demo-intro">
@@ -1252,34 +1333,83 @@ export default function Home_user() {
           )}
         </div>
 
-        <div className="home-user-clock home-user-card--clock">
-          <h3>Orologio</h3>
-          <p>{formatDateTimeIT(currentTime)}</p>
-        </div>
+        <OfficeClock now={currentTime} status={activeBreak ? { ...daySummary, title: "Pausa in corso", description: "Il tempo di pausa non viene conteggiato come lavoro.", tone: "warning" } : daySummary} navigation={
+          <>
+            <button type="button" onClick={() => document.getElementById("clocking-action")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Timbratura</button>
+            <button type="button" onClick={() => navigate("/storico")} disabled={isStamping || leaveRequestLoading}>Storico</button>
+            <button type="button" onClick={handleLogout} disabled={isStamping || leaveRequestLoading}>Esci</button>
+          </>
+        } />
 
-        <div
-          className={`home-user-day-summary home-user-card--day-summary home-user-day-summary--${daySummary.tone}`}
-        >
-          <div>
-            <span className="home-user-day-summary-label">Riepilogo giornata</span>
-            <h3>{daySummary.title}</h3>
-            <p>{daySummary.description}</p>
-            {daySummary.detail && <small>{daySummary.detail}</small>}
+        {!loadingStatus && (
+          <CollapsibleSection headingLevel={3} title="Ore nette della giornata" sectionId="work-summary" className="home-user-work-summary" aria-label="Totali delle sessioni concluse oggi">
+            <p>Sessioni concluse oggi · pause già sottratte</p>
+            <dl>
+              <div><dt>Ore nette lavorate</dt><dd>{formatDuration(todayWork.durationSec)}</dd></div>
+              <div><dt>Pause concluse</dt><dd>{formatDuration(todayWork.breakSec)}</dd></div>
+            </dl>
+          </CollapsibleSection>
+        )}
+
+        {canClockOut && !isStampBlocked && (
+          <div className="home-user-break-action">
+            <button
+              type="button"
+              className="btn-primary"
+              onClick={() => handleBreak(activeBreak)}
+              disabled={
+                isStamping ||
+                loadingStatus ||
+                loadingGpsPolicy ||
+                loadingOpenRecord ||
+                leaveRequestLoading
+              }
+            >
+              {stampingAction === "breakStart"
+                ? "Registro inizio pausa..."
+                : stampingAction === "breakEnd"
+                  ? "Registro fine pausa..."
+                  : activeBreak ? "Fine pausa" : "Inizio pausa"}
+            </button>
+            {activeBreak && (
+              <p>Pausa in corso: il tempo non viene conteggiato come lavoro.</p>
+            )}
           </div>
-        </div>
+        )}
 
-        <div
+<CollapsibleSection headingLevel={3} title={isRemoteShowcase ? "Modalità timbrature e pause" : "Modalità della prossima entrata/uscita"} sectionId="work-location" className="home-user-offsite-options" aria-label="Modalità della prossima timbratura">
+          <label htmlFor="clock-work-location">{isRemoteShowcase ? "Modalità timbrature e pause" : "Modalità della prossima entrata/uscita"}</label>
+          <select id="clock-work-location" value={workLocation} onChange={event => setWorkLocation(event.target.value)} disabled={isStamping}>
+            <option value="office">In sede</option>
+            <option value="offsite">Fuori sede — motivazione obbligatoria</option>
+          </select>
+          {workLocation === "offsite" && (
+            <>
+              <label htmlFor="clock-offsite-reason">Motivazione fuori sede (obbligatoria)</label>
+              <textarea id="clock-offsite-reason" value={offsiteReason} onChange={event => setOffsiteReason(event.target.value)} maxLength={500} required disabled={isStamping} />
+              <p>{isRemoteShowcase ? "Fuori sede: entrata, uscita e pause richiedono questa motivazione. Nessuna posizione GPS sarà inventata; email disabilitate nello Showcase." : "GPS non richiesto: questa timbratura sarà registrata come fuori sede e segnalata all’Admin. La motivazione non si applica alle pause."}</p>
+            </>
+          )}
+        </CollapsibleSection>
+
+<p className="home-user-contextual-hint" aria-live="polite">
+          Prossima entrata/uscita: <strong>{workLocation === "offsite" ? "Fuori sede — motivazione obbligatoria" : remoteGpsAuthorized ? "DEMO online — controllo GPS disattivato" : canSkipGps ? "In sede — DEMO locale senza GPS" : "In sede"}</strong>
+        </p>
+
+<div id="clocking-action"
           className={`home-user-primary-action home-user-primary-action--${primaryAction}`}
         >
           <button
             onClick={handleStamp}
             className="btn-primary home-user-stamp-button"
             disabled={
+              loadingGpsPolicy ||
               loadingStatus ||
               loadingOpenRecord ||
               loadingLeaveStatus ||
               isStamping ||
               leaveRequestLoading ||
+              activeBreak ||
               isStampBlocked
             }
             title={
@@ -1295,6 +1425,13 @@ export default function Home_user() {
             {primaryButtonLabel}
           </button>
         </div>
+        {/* home-user-offsite-validation-below-button */}
+        {workLocation === "offsite" && uiMsg?.text && /motivazione fuori sede/i.test(uiMsg.text) && (
+          <p className={msgClass} role="alert">
+            {uiMsg.text}
+          </p>
+        )}
+
 
         <p className="home-user-contextual-hint">{userContextualHint}</p>
 
@@ -1312,7 +1449,9 @@ export default function Home_user() {
 
         <div ref={feedbackMessageRef} aria-hidden="true" />
 
-        {uiMsg?.text && <p className={msgClass}>{uiMsg.text}</p>}
+        {uiMsg?.text && !(workLocation === "offsite" && uiMsg?.text && /motivazione fuori sede/i.test(uiMsg.text)) && (
+          <p className={msgClass}>{uiMsg.text}</p>
+        )}
 
         {isDemoMode && (
           <div className="home-user-demo-info-card">
@@ -1322,13 +1461,14 @@ export default function Home_user() {
               all&apos;area dell&apos;ufficio.
             </p>
             <p>
-              In questa demo il controllo distanza è disattivato per permettere il test
-              da qualsiasi posizione.
+              {remoteGpsAuthorized ? REMOTE_GPS_NOTICE : canSkipGps
+                ? "Demo locale: entrata, uscita e pause disponibili senza GPS. Nessuna coordinata viene generata."
+                : "Il GPS resta richiesto finché il server non autorizza la modalità demo senza posizione."}
             </p>
           </div>
         )}
-        <div className="home-user-status-card home-user-card--leave-request">
-          <h3>Richiedi assenza</h3>
+        <CollapsibleSection headingLevel={3} title="Richiedi assenza" sectionId="leave-request" className="home-user-status-card">
+
 
           <p className="home-user-muted-text">
             Puoi registrare una mutua oppure inviare una richiesta ferie/PIR
@@ -1370,28 +1510,6 @@ export default function Home_user() {
               )}
             </div>
 
-
-            {leaveType === "pir" && (
-              <div className="home-user-form-row">
-                <label htmlFor="pir-mode">Tipo di PIR</label>
-
-                <select
-                  id="pir-mode"
-                  value={pirMode}
-                  onChange={(e) => setPirMode(e.target.value)}
-                  disabled={leaveRequestLoading || isStamping}
-                >
-                  <option value="fullDay">Giornata intera</option>
-                  <option value="hourly">Permesso a ore</option>
-                </select>
-
-                <p className="home-user-helper-text">
-                  Puoi richiedere il PIR per l'intera giornata oppure per un numero
-                  specifico di ore.
-                </p>
-              </div>
-            )}
-
             <div className="home-user-form-row">
               <label htmlFor="leave-start-date">
                 {leaveType === "ferie" ? "Data inizio ferie" : "Data assenza"}
@@ -1417,41 +1535,6 @@ export default function Home_user() {
                 </p>
               )}
             </div>
-
-            {leaveType === "pir" && pirMode === "hourly" && (
-              <>
-                <div className="home-user-form-row">
-                  <label htmlFor="pir-start-time">Ora di inizio</label>
-                  <input
-                    id="pir-start-time"
-                    type="time"
-                    value={pirStartTime}
-                    onChange={(e) => setPirStartTime(e.target.value)}
-                    disabled={leaveRequestLoading || isStamping}
-                  />
-                </div>
-
-                <div className="home-user-form-row">
-                  <label htmlFor="pir-hours">Durata PIR</label>
-                  <select
-                    id="pir-hours"
-                    value={pirHours}
-                    onChange={(e) => setPirHours(Number(e.target.value))}
-                    disabled={leaveRequestLoading || isStamping}
-                  >
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((hours) => (
-                      <option key={hours} value={hours}>
-                        {hours} {hours === 1 ? "ora" : "ore"}
-                      </option>
-                    ))}
-                  </select>
-
-                  <p className="home-user-helper-text">
-                    Seleziona l'orario di inizio e la durata del permesso.
-                  </p>
-                </div>
-              </>
-            )}
 
             {leaveType === "ferie" && (
               <div className="home-user-form-row">
@@ -1503,10 +1586,10 @@ export default function Home_user() {
               </button>
             </div>
           </div>
-        </div>
+        </CollapsibleSection>
 
-        <div className="home-user-status-card home-user-card--leave-history">
-          <h3>Le tue richieste assenze</h3>
+        <CollapsibleSection headingLevel={3} title="Le tue richieste assenze" sectionId="leave-history" className="home-user-status-card">
+
 
           {loadingUserLeaves ? (
             <p className="home-user-loading">Carico richieste assenze...</p>
@@ -1528,10 +1611,7 @@ export default function Home_user() {
 
                       {leave.type === "pir" && leave.hours != null && (
                         <span className="home-user-leave-note">
-                          PIR: {leave.hours} {leave.hours === 1 ? "ora" : "ore"}
-                          {leave.startTime && leave.endTime
-                            ? ` · ${leave.startTime}–${leave.endTime}`
-                            : ""}
+                          Ore PIR: {leave.hours}
                         </span>
                       )}
 
@@ -1560,17 +1640,17 @@ export default function Home_user() {
               </div>
             </>
           )}
-        </div>
+        </CollapsibleSection>
 
         {!loadingLeaveStatus && todayLeave && (
-          <div
+          <CollapsibleSection headingLevel={3} title="Assenza di oggi" sectionId="today-leave"
             className={
               hasTodayApprovedLeave
                 ? "home-user-warning-card"
                 : "home-user-status-card"
             }
           >
-            <h3>Assenza di oggi</h3>
+
 
             <p className="home-user-warning-text">
               Per oggi risulta: <strong>{todayLeaveLabel}</strong>.
@@ -1587,30 +1667,17 @@ export default function Home_user() {
               Data: <strong>{formatDateIT(new Date(todayLeave.date))}</strong>
             </p>
 
-            {todayLeave.type === "pir" &&
-              todayLeave.hours != null &&
-              todayLeave.startTime &&
-              todayLeave.endTime && (
-                <p className="home-user-warning-detail">
-                  Orario:{" "}
-                  <strong>
-                    {todayLeave.startTime}–{todayLeave.endTime} · {todayLeave.hours}{" "}
-                    {todayLeave.hours === 1 ? "ora" : "ore"}
-                  </strong>
-                </p>
-              )}
-
             {todayLeave.note && (
               <p className="home-user-warning-detail">
                 Nota: <strong>{todayLeave.note}</strong>
               </p>
             )}
-          </div>
+          </CollapsibleSection>
         )}
 
         {!loadingOpenRecord && openRecord && hasBlockingAnomaly && (
-          <div className="home-user-warning-card">
-            <h3>Attenzione</h3>
+          <CollapsibleSection headingLevel={3} title="Attenzione" sectionId="record-anomaly" className="home-user-warning-card">
+
 
             <p className="home-user-warning-text">{anomalyLabel}</p>
 
@@ -1724,7 +1791,7 @@ export default function Home_user() {
                 </div>
               </div>
             )}
-          </div>
+          </CollapsibleSection>
         )}
 
         <div className="home-user-actions">
@@ -1748,6 +1815,7 @@ export default function Home_user() {
         {showLogoutMessage && <p className="logout-msg">Logout effettuato!</p>}
       </div >
     </div >
+    </SectionPreferencesProvider>
   );
 }
 

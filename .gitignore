@@ -1,28 +1,25 @@
-﻿# Dependencies
-node_modules/
-
-# Build output
-dist/
-build/
-
-# Environment files
+# Private configuration and generated artifacts never enter a publication snapshot.
 .env
 .env.*
 !.env.example
-
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Coverage
+node_modules/
+dist/
+dist-showcase/
+dist-ssr/
 coverage/
-
-# Operating system
-.DS_Store
-Thumbs.db
-
-# Editor settings
-.vscode/
-.idea/
+*.log
+*.backup-*
+*.bak
+*.tmp
+*.temp
+*.zip
+*.tar
+*.gz
+*.dump
+*.bson
+*.sqlite
+*.db
+screenshots/
+evidence/
+showcase-accounts.json
+*-credentials.json

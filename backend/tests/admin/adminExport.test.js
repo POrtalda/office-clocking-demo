@@ -33,7 +33,7 @@ const jwt = require("jsonwebtoken");
 const { getRangeFromToInAppTz } = require("../../utils/dateTime");
 
 const CSV_HEADER =
-  "tipoRiga;username;userId;dataLocale;entrataISO;uscitaISO;durataSec;durataHHMMSS;statusOriginale;statusEffettivo;statoLabel;assenzaTipo;assenzaOre;assenzaNote;reviewedBy;reviewedAtISO;reviewNote;cancelledBy;cancelledAtISO;cancelReason";
+  "tipoRiga;username;userId;dataLocale;entrataISO;uscitaISO;durataSec;durataHHMMSS;statusOriginale;statusEffettivo;statoLabel;assenzaTipo;assenzaOre;assenzaNote;reviewedBy;reviewedAtISO;reviewNote;cancelledBy;cancelledAtISO;cancelReason;pauseSec;pauseHHMMSS;pauseIntervalliISO";
 
 function mockTimeRecordFind(records = []) {
   const leanMock = jest.fn().mockResolvedValue(records);

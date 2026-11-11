@@ -38,6 +38,8 @@ function createTransporter() {
 }
 
 async function sendEmail({ to, subject, text }) {
+  // Fail closed even if SMTP credentials are accidentally present. No transport is created.
+  if (process.env.APP_ENV === "showcase") return { skipped: true, reason: "SHOWCASE_EMAIL_DISABLED" };
   if (!Array.isArray(to) || to.length === 0) {
     return {
       skipped: true,

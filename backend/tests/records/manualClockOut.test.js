@@ -4,6 +4,12 @@
  * Test API per POST /api/records/request-manual-clock-out
  */
 
+jest.mock("../../services/timeRecordLock", () => ({
+  withTimeRecordLock: jest.fn(async (_userId, operation) =>
+    operation("test-owner", async () => {})
+  ),
+}));
+
 const request = require("supertest");
 
 jest.mock("../../models/TimeRecord");
@@ -168,14 +174,14 @@ describe("POST /api/records/request-manual-clock-out", () => {
     expect(record.save).not.toHaveBeenCalled();
   });
 
-  test("restituisce 400 se la durata proposta supera 12 ore", async () => {
+  test("consente la richiesta oltre 12 ore, soggetta ad approvazione Admin", async () => {
     const record = {
       _id: "record123",
       user: "user123",
       clockIn: new Date("2026-03-24T06:00:00.000Z"),
       clockOut: null,
       status: "manual_closure_rejected",
-      save: jest.fn(),
+      save: jest.fn().mockResolvedValue(true),
     };
 
     TimeRecord.findById.mockResolvedValue(record);
@@ -189,11 +195,11 @@ describe("POST /api/records/request-manual-clock-out", () => {
         time: "20:30",
       });
 
-    expect(res.statusCode).toBe(400);
-    expect(res.body.message).toBe(
-      "La durata proposta supera il limite massimo di 12 ore"
-    );
-    expect(record.save).not.toHaveBeenCalled();
+    expect(res.statusCode).toBe(200);
+    expect(record.save).toHaveBeenCalled();
+    expect(record.status).toBe("pending_manual_closure");
+    expect(record.clockOut).toBeNull();
+    expect(record.manualClosureRequest.proposedClockOut).toBeInstanceOf(Date);
   });
 
   test("restituisce 200 e salva la richiesta di chiusura manuale se valida", async () => {

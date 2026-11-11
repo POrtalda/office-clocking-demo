@@ -1,15 +1,17 @@
+const { getDailyAttendance } = require("../controllers/adminDailyAttendanceController");
 /**
  * routes/admin.js
  *
  * Router delle rotte riservate agli amministratori.
  *
- * Responsabilità:
+ * ResponsabilitÃ :
  * - definire gli endpoint sotto /api/admin
  * - applicare i middleware di protezione
  * - inoltrare ogni richiesta al controller corretto
  */
 
 const express = require("express");
+const { editTimeRecord } = require("../controllers/adminRecordEditController");
 const { authMiddleware } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/requireRole");
 const blockDemoMode = require("../middleware/blockDemoMode");
@@ -152,6 +154,7 @@ router.get("/export", ...adminGuards, exportRecordsCsv);
 
 // Annulla logicamente una timbratura errata
 router.post("/records/:recordId/cancel", ...adminGuards, cancelTimeRecord);
+router.patch("/records/:recordId", ...adminGuards, editTimeRecord);
 
 // Riepilogo singolo utente
 router.get("/summary", ...adminGuards, getUserSummary);
@@ -183,5 +186,7 @@ router.post(
   ...adminGuards,
   rejectManualClosureRequest
 );
+
+router.get("/daily-attendance", ...adminGuards, getDailyAttendance);
 
 module.exports = router;

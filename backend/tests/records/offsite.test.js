@@ -1,0 +1,62 @@
+const request = require("supertest");
+jest.mock("../../models/TimeRecord", () => ({ findOne: jest.fn(), create: jest.fn() }));
+jest.mock("../../models/LeaveRequest", () => ({ findOne: jest.fn() }));
+jest.mock("../../models/User", () => ({ findById: jest.fn() }));
+jest.mock("jsonwebtoken", () => ({ verify: jest.fn() }));
+jest.mock("../../utils/timeRecordNotifications", () => ({ scheduleTimeRecordEmail: jest.fn() }));
+jest.mock("../../services/timeRecordLock", () => ({ withTimeRecordLock: jest.fn(async (_id, operation) => operation("test", async () => {})) }));
+const TimeRecord = require("../../models/TimeRecord");
+const LeaveRequest = require("../../models/LeaveRequest");
+const User = require("../../models/User");
+const jwt = require("jsonwebtoken");
+const { scheduleTimeRecordEmail } = require("../../utils/timeRecordNotifications");
+const app = require("../../app");
+let record;
+const env = Object.fromEntries(["NODE_ENV", "DEMO_MODE", "GEOLOCATION_CLOCK_IN_ENABLED"].map(key => [key, process.env[key]]));
+const post = (action, body) => request(app).post(`/api/records/${action}`).set("Authorization", "Bearer test").send(body);
+beforeEach(() => {
+  jest.clearAllMocks();
+  jest.useFakeTimers({ doNotFake: ["nextTick", "setImmediate"] });
+  jest.setSystemTime(new Date("2026-11-11T12:00:00Z"));
+  process.env.NODE_ENV = "production"; process.env.DEMO_MODE = "false"; process.env.GEOLOCATION_CLOCK_IN_ENABLED = "true";
+  jwt.verify.mockReturnValue({ id: "employee", username: "mario", role: "user" });
+  LeaveRequest.findOne.mockResolvedValue(null);
+  User.findById.mockReturnValue({ select: jest.fn().mockReturnValue({ lean: jest.fn().mockResolvedValue({ geolocationEnabled: true }) }) });
+  record = { user: "employee", clockIn: new Date("2026-11-11T08:00:00Z"), clockOut: null, status: "open", breaks: [], save: jest.fn().mockResolvedValue(true) };
+  TimeRecord.findOne.mockReturnValue({ sort: jest.fn().mockImplementation(async () => record) });
+  TimeRecord.create.mockImplementation(async data => data);
+});
+afterEach(() => { jest.useRealTimers(); for (const [key, value] of Object.entries(env)) { if (value === undefined) delete process.env[key]; else process.env[key] = value; } });
+test.each(["clock-in", "clock-out"])("explicit offsite %s works without GPS, preserves reason/user/time and queues an admin notification", async action => {
+  const saved = record; if (action === "clock-in") record = null;
+  const res = await post(action, { workLocation: "offsite", offsiteReason: "  Visita al cliente  " });
+  expect(res.status).toBe(action === "clock-in" ? 201 : 200);
+  const data = action === "clock-in" ? TimeRecord.create.mock.calls[0][0] : saved;
+  const prefix = action === "clock-in" ? "clockIn" : "clockOut";
+  expect(data[`${prefix}Mode`]).toBe("offsite");
+  expect(data[`${prefix}OffsiteReason`]).toBe("Visita al cliente");
+  expect(data[`${prefix}Location`]).toBeNull();
+  expect(data[`${prefix}OffsiteLocation`]).toBeNull();
+  expect(data.user).toBe("employee");
+  expect(data[prefix]).toEqual(new Date("2026-11-11T12:00:00Z"));
+  expect(scheduleTimeRecordEmail).toHaveBeenCalledWith(expect.objectContaining({ userId: "employee", mode: "offsite", reason: "Visita al cliente", at: new Date("2026-11-11T12:00:00Z") }));
+  expect(User.findById).not.toHaveBeenCalled();
+});
+test.each([undefined, "", "  ", 123, "x".repeat(501)])("rejects missing/invalid offsite reason %j without writing or notifying", async offsiteReason => {
+  record = null;
+  const res = await post("clock-in", { workLocation: "offsite", offsiteReason });
+  expect(res.status).toBe(400);
+  expect(TimeRecord.create).not.toHaveBeenCalled();
+  expect(scheduleTimeRecordEmail).not.toHaveBeenCalled();
+});
+test("ordinary office stamping cannot bypass GPS just by supplying a reason", async () => {
+  record = null;
+  const res = await post("clock-in", { offsiteReason: "Cliente" });
+  expect(res.status).toBe(400); expect(res.body.code).toBe("INVALID_LOCATION");
+  expect(TimeRecord.create).not.toHaveBeenCalled();
+});
+test("offsite and demo markers cannot be combined", async () => {
+  record = null;
+  const res = await post("clock-in", { workLocation: "offsite", offsiteReason: "Cliente", demoWithoutGps: true });
+  expect(res.status).toBe(400); expect(res.body.code).toBe("CONFLICTING_CLOCK_MODES");
+});

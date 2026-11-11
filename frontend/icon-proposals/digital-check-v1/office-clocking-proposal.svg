@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc"><title id="title">Office Clocking — proposta icona</title><desc id="desc">Timbratore digitale blu con display 09:00 e segno di conferma verde.</desc><rect width="512" height="512" rx="112" fill="#2563eb"/>
+<rect x="80" y="100" width="352" height="206" rx="32" fill="#0f172a"/>
+<g fill="none" stroke="#ecfeff" stroke-width="12" stroke-linecap="round"><path d="M120 144L152 144"/><path d="M158 150L158 190"/><path d="M158 202L158 242"/><path d="M120 248L152 248"/><path d="M114 202L114 242"/><path d="M114 150L114 190"/><path d="M184 144L216 144"/><path d="M222 150L222 190"/><path d="M222 202L222 242"/><path d="M184 248L216 248"/><path d="M178 150L178 190"/><path d="M184 196L216 196"/><path d="M280 144L312 144"/><path d="M318 150L318 190"/><path d="M318 202L318 242"/><path d="M280 248L312 248"/><path d="M274 202L274 242"/><path d="M274 150L274 190"/><path d="M344 144L376 144"/><path d="M382 150L382 190"/><path d="M382 202L382 242"/><path d="M344 248L376 248"/><path d="M338 202L338 242"/><path d="M338 150L338 190"/></g>
+<g fill="#a5f3fc"><circle cx="247" cy="176" r="7"/><circle cx="247" cy="218" r="7"/></g>
+<rect x="112" y="354" width="128" height="18" rx="9" fill="#ffffff" opacity=".7"/>
+<circle cx="366" cy="370" r="72" fill="#10b981"/>
+<path d="M332 370L355 393L400 345" fill="none" stroke="#ffffff" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/></svg>

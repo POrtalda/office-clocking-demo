@@ -1,3 +1,4 @@
+import TimeRecordDetails from "../TimeRecordDetails/TimeRecordDetails";
 import "./Storico.css";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -388,6 +389,9 @@ export default function Storico() {
       "Durata secondi",
       "Durata HH:MM:SS",
       "Motivo annullamento",
+      "Pause concluse secondi",
+      "Pause concluse HH:MM:SS",
+      "Intervalli pause",
     ];
 
     const rows = records.map((record) => {
@@ -400,6 +404,9 @@ export default function Storico() {
         durationSec,
         formatDuration(durationSec),
         record?.cancellation?.cancelReason || "",
+        record.breakSec || 0,
+        formatDuration(record.breakSec || 0),
+        (record.breaks || []).map(b => `${formatDateTimeIT(b.startAt)} / ${b.endAt ? formatDateTimeIT(b.endAt) : "In corso"}`).join(" | "),
       ];
     });
 
@@ -596,6 +603,42 @@ export default function Storico() {
                 const isCancelled = isCancelledRecord(record);
                 const durationSec = getRecordDurationSec(record);
 
+                const breaks = Array.isArray(record.breaks)
+                  ? [...record.breaks].sort((a, b) => new Date(a.startAt) - new Date(b.startAt))
+                  : [];
+
+                const completedBreaks = breaks.filter(
+                  (b) => b.startAt && b.endAt
+                );
+
+                const breakSec = record.breakSec ?? completedBreaks.reduce((total, b) => {
+                  const seconds =
+                    (new Date(b.endAt) - new Date(b.startAt)) / 1000;
+
+                  return total + (
+                    Number.isFinite(seconds)
+                      ? Math.max(0, Math.floor(seconds))
+                      : 0
+                  );
+                }, 0);
+
+                const firstBreak = completedBreaks[0];
+
+                const beforeBreakSec = firstBreak
+                  ? Math.max(
+                      0,
+                      Math.floor(
+                        (new Date(firstBreak.startAt) -
+                          new Date(record.clockIn)) / 1000
+                      )
+                    )
+                  : 0;
+
+                const afterBreakSec = Math.max(
+                  0,
+                  durationSec - beforeBreakSec
+                );
+
                 return (
                   <div
                     key={record._id}
@@ -617,11 +660,48 @@ export default function Storico() {
                         {record.clockOut ? formatDateTimeIT(record.clockOut) : "-"}
                       </strong>
                     </p>
+                    {breaks.length > 0 && (
+                      <div className="storico-break-details">
+                        <h4>Pause della sessione</h4>
 
-                    <p>
-                      Durata: <strong>{formatDuration(durationSec)}</strong>
+                        {breaks.map((b, index) => (
+                          <p key={index}>
+                            Pausa {index + 1}:{" "}
+                            <strong>{formatDateTimeIT(b.startAt)}</strong>
+                            {" - "}
+                            <strong>
+                              {b.endAt
+                                ? formatDateTimeIT(b.endAt)
+                                : "In corso"}
+                            </strong>
+                          </p>
+                        ))}
+
+                        <p>
+                          Totale pause concluse:{" "}
+                          <strong>{formatDuration(breakSec)}</strong>
+                        </p>
+
+                        {record.clockOut && !isCancelled && firstBreak && (
+                          <>
+                            <p>
+                              Lavoro prima della prima pausa:{" "}
+                              <strong>{formatDuration(beforeBreakSec)}</strong>
+                            </p>
+                            <p>
+                              Lavoro dopo la prima pausa (netto):{" "}
+                              <strong>{formatDuration(afterBreakSec)}</strong>
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    <p className="storico-net-duration">
+                      Ore nette lavorate: <strong>{formatDuration(durationSec)}</strong>
                     </p>
 
+                    <TimeRecordDetails record={record} />
                     {isCancelled && (
                       <p>
                         Nota:{" "}

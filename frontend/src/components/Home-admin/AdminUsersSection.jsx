@@ -38,6 +38,7 @@ export default function AdminUsersSection({
   uiLabels,
 }) {
   const [userToDelete, setUserToDelete] = useState(null);
+  const isRemoteShowcase = import.meta.env.VITE_SHOWCASE_REMOTE === "true";
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
 
   const anyUserRowActionLoading =
@@ -78,6 +79,7 @@ export default function AdminUsersSection({
   return (
     <>
       <section className="homeadmin-card">
+        {isRemoteShowcase && <p className="homeadmin-muted-text">Showcase online: gestione account e GPS in sola lettura.</p>}
         <div className="admin-section-title-row">
           <h2 className="homeadmin-section-title">Gestione utenti</h2>
 
@@ -141,7 +143,7 @@ export default function AdminUsersSection({
                 type="text"
                 value={newUsername}
                 onChange={(e) => setNewUsername(e.target.value)}
-                disabled={createUserLoading}
+                disabled={isRemoteShowcase || createUserLoading}
                 placeholder="Es. giulia"
               />
             </div>
@@ -153,7 +155,7 @@ export default function AdminUsersSection({
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                disabled={createUserLoading}
+                disabled={isRemoteShowcase || createUserLoading}
                 placeholder="Password iniziale"
               />
             </div>
@@ -164,7 +166,7 @@ export default function AdminUsersSection({
                 className="homeadmin-select"
                 value={newRole}
                 onChange={(e) => setNewRole(e.target.value)}
-                disabled={createUserLoading}
+                disabled={isRemoteShowcase || createUserLoading}
               >
                 <option value="user">{getRoleLabel("user")}</option>
                 <option value="admin">{getRoleLabel("admin")}</option>
@@ -180,7 +182,7 @@ export default function AdminUsersSection({
                 type="text"
                 value={newFullName}
                 onChange={(e) => setNewFullName(e.target.value)}
-                disabled={createUserLoading}
+                disabled={isRemoteShowcase || createUserLoading}
                 placeholder="Nome e cognome (opzionale)"
               />
             </div>
@@ -192,7 +194,7 @@ export default function AdminUsersSection({
                 type="email"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
-                disabled={createUserLoading}
+                disabled={isRemoteShowcase || createUserLoading}
                 placeholder="Email (opzionale)"
               />
             </div>
@@ -202,7 +204,7 @@ export default function AdminUsersSection({
             <button
               className="homeadmin-btn homeadmin-btn-primary"
               onClick={handleCreateUser}
-              disabled={createUserLoading}
+              disabled={isRemoteShowcase || createUserLoading}
             >
               {createUserLoading ? "Creazione in corso..." : "Crea nuovo utente"}
             </button>
@@ -285,7 +287,7 @@ export default function AdminUsersSection({
                               : "homeadmin-btn-success"
                           }`}
                           onClick={() => handleToggleUserStatus(adminUser)}
-                          disabled={rowActionLoading}
+                          disabled={isRemoteShowcase || rowActionLoading}
                         >
                           {statusLoading
                             ? "Aggiornamento in corso..."
@@ -303,7 +305,7 @@ export default function AdminUsersSection({
                               : "homeadmin-btn-secondary"
                           }`}
                           onClick={() => handleToggleUserGeolocation(adminUser)}
-                          disabled={rowActionLoading}
+                          disabled={isRemoteShowcase || rowActionLoading}
                         >
                           {geolocationLoading
                             ? "Aggiornamento in corso..."
@@ -317,7 +319,7 @@ export default function AdminUsersSection({
                         <button
                           className="homeadmin-btn homeadmin-btn-danger homeadmin-btn-sm"
                           onClick={() => openDeleteModal(adminUser)}
-                          disabled={rowActionLoading}
+                          disabled={isRemoteShowcase || rowActionLoading}
                         >
                           {deleteLoading ? "Eliminazione in corso..." : "Elimina"}
                         </button>
@@ -339,13 +341,13 @@ export default function AdminUsersSection({
                                 [adminUser._id]: e.target.value,
                               }))
                             }
-                            disabled={rowActionLoading}
+                            disabled={isRemoteShowcase || rowActionLoading}
                           />
 
                           <button
                             className="homeadmin-btn homeadmin-btn-primary homeadmin-btn-sm"
                             onClick={() => handleChangeUserPassword(adminUser)}
-                            disabled={rowActionLoading}
+                            disabled={isRemoteShowcase || rowActionLoading}
                           >
                             {passwordLoading
                               ? "Salvataggio in corso..."

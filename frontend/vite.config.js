@@ -25,10 +25,10 @@ export default defineConfig({
 
       manifest: {
         id: "/",
-        name: "Office Clocking Demo",
-        short_name: "Clocking Demo",
+        name: "Office Clocking",
+        short_name: "Clocking",
         description:
-          "Versione dimostrativa di Office Clocking per la gestione di timbrature, presenze e assenze.",
+          "Gestione di timbrature, presenze, assenze e attività aziendali.",
 
         lang: "it-IT",
 
@@ -38,8 +38,8 @@ export default defineConfig({
         display: "standalone",
         orientation: "any",
 
-        theme_color: "#f97316",
-        background_color: "#fff7ed",
+        theme_color: "#4f46e5",
+        background_color: "#f3f4f6",
 
         icons: [
           {

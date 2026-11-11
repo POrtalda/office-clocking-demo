@@ -1,0 +1,4 @@
+.admin-record-editor { margin: 6px 0; white-space: normal; }
+.admin-record-editor form { display: grid; gap: 8px; width: 320px; max-width: 100%; padding: 12px 0; }
+.admin-record-editor form input, .admin-record-editor form textarea { max-width: 100%; min-width: 0; box-sizing: border-box; font: inherit; padding: 8px; border: 1px solid #cbd5e1; border-radius: 6px; }
+.admin-record-editor form p { font-size: .85rem; }

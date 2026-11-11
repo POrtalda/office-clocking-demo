@@ -184,7 +184,7 @@
   background: #2563eb;
 }
 
-/* Se il giorno con record è anche selezionato */
+/* Se il giorno con record Ã¨ anche selezionato */
 .react-calendar__tile--active.has-record {
   border-color: #1d4ed8;
 }
@@ -408,3 +408,31 @@
   opacity: 0.75;
   border-left: 4px solid #dc2626;
 }
+.storico-break-details {
+  margin: 12px 0;
+  padding: 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+}
+
+.storico-break-details h4 {
+  margin: 0 0 10px;
+  color: #075985;
+}
+
+.storico-break-details p {
+  margin: 6px 0;
+  overflow-wrap: anywhere;
+}
+
+.storico-record-card .storico-net-duration {
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid #dbeafe;
+  color: #1e3a8a; font-size: 1.05rem; font-variant-numeric: tabular-nums;
+}
+.storico-break-details strong { font-variant-numeric: tabular-nums; }
+
+/* Keep calendar, range fields and results within narrow viewports. */
+.storico-container, .storico-container * { box-sizing: border-box; }
+.storico-box, .storico-range-field { min-width: 0; }
+.storico-range-field input[type="date"] { min-width: 0; width: 100%; max-width: 100%; }

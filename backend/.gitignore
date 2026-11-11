@@ -6,3 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 .DS_Store
 coverage
+# Private configuration for the local showcase launcher
+.env.showcase.local
+
+# Local configuration, backups and generated review evidence stay on this machine.
+.env.*
+*.backup-*

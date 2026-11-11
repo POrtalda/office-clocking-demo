@@ -12,9 +12,14 @@
  */
 
 const TimeRecord = require("../models/TimeRecord");
+const { calculateWorkDuration, withWorkDuration } = require("../utils/workDuration");
+const { withTimeRecordLock } = require("../services/timeRecordLock");
 const LeaveRequest = require("../models/LeaveRequest");
 const User = require("../models/User");
 const AppError = require("../utils/AppError");
+const { canUseLocalDemoGps } = require("../utils/localDemoGps");
+const { canUseRemoteShowcaseGps } = require("../utils/remoteShowcase");
+const { scheduleTimeRecordEmail } = require("../utils/timeRecordNotifications");
 
 const {
   dayjs,
@@ -31,10 +36,6 @@ const {
   validateTimeString,
 } = require("../utils/validators");
 
-const {
-  MAX_MANUAL_CLOSURE_HOURS,
-  MAX_MANUAL_CLOSURE_SECONDS,
-} = require("../utils/businessRules");
 
 const {
   validateClockInLocation,
@@ -179,12 +180,77 @@ function buildValidatedLocation(locationValidation) {
   };
 }
 
-async function shouldValidateGeolocationForUser(userId) {
+function getGpsPolicy(req, res) {
+  // Keep the existing local contract separate: old clients cannot reuse its marker remotely.
+  return res.json({ canSkipGps: canUseLocalDemoGps(req), canSkipShowcaseGps: canUseRemoteShowcaseGps(req) });
+}
+
+async function shouldValidateGeolocationForUser(userId, req) {
+  if (req?.body?.showcaseWithoutGps === true) {
+    if (!canUseRemoteShowcaseGps(req)) throw new AppError("GPS disattivabile solo nello Showcase remoto autorizzato", 403, "SHOWCASE_GPS_BYPASS_NOT_ALLOWED");
+    return false;
+  }
+  if (req?.body?.demoWithoutGps === true) {
+    if (!canUseLocalDemoGps(req)) {
+      throw new AppError("Timbratura senza GPS disponibile solo nella demo locale autorizzata", 403, "DEMO_GPS_BYPASS_NOT_ALLOWED");
+    }
+    return false;
+  }
+  // Without explicit remote authorization, Showcase never inherits a per-user exemption.
+  if (process.env.APP_ENV === "showcase") return true;
   const userDoc = await User.findById(userId)
     .select("geolocationEnabled")
     .lean();
 
   return userDoc?.geolocationEnabled !== false;
+}
+
+// Non cambiare la modalità predefinita per i client già esistenti.
+function readClockMetadata(body) {
+  const mode = body?.workLocation ?? "office";
+  if (!["office", "offsite"].includes(mode)) {
+    throw new AppError("Modalità di timbratura non valida", 400, "INVALID_WORK_LOCATION");
+  }
+  if ((body?.showcaseWithoutGps === true && (body?.demoWithoutGps === true || body?.location != null)) ||
+      (mode === "offsite" && (body?.demoWithoutGps === true || body?.showcaseWithoutGps === true))) {
+    throw new AppError("La modalità fuori sede è distinta dalla demo senza GPS", 400, "CONFLICTING_CLOCK_MODES");
+  }
+  if (body?.note != null && typeof body.note !== "string") {
+    throw new AppError("La nota deve essere un testo", 400, "INVALID_CLOCK_NOTE");
+  }
+  const note = (body?.note || "").trim();
+  if (note.length > 1000) {
+    throw new AppError("Nota troppo lunga (massimo 1000 caratteri)", 400, "CLOCK_NOTE_TOO_LONG");
+  }
+  if (mode === "offsite" && typeof body?.offsiteReason !== "string") {
+    throw new AppError("Inserisci la motivazione fuori sede", 400, "OFFSITE_REASON_REQUIRED");
+  }
+  const reason = mode === "offsite" ? body.offsiteReason.trim() : "";
+  if (mode === "offsite" && !reason) {
+    throw new AppError("Inserisci la motivazione fuori sede", 400, "OFFSITE_REASON_REQUIRED");
+  }
+  if (reason.length > 500) {
+    throw new AppError("Motivazione troppo lunga (massimo 500 caratteri)", 400, "OFFSITE_REASON_TOO_LONG");
+  }
+  return { mode, note, reason };
+}
+
+function readOffsiteLocation(location) {
+  if (location == null) return null;
+  if (typeof location !== "object" || Array.isArray(location)) {
+    throw new AppError("Posizione GPS fuori sede non valida", 400, "INVALID_OFFSITE_LOCATION");
+  }
+  const { latitude, longitude, accuracy } = location;
+  // Non accettare coordinate arbitrarie, vuote o non finite.
+  if (latitude == null || longitude == null || latitude === "" || longitude === "") {
+    throw new AppError("Coordinate fuori sede non valide", 400, "INVALID_OFFSITE_LOCATION");
+  }
+  const lat = Number(latitude), lng = Number(longitude);
+  const acc = accuracy == null ? null : Number(accuracy);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180 || (acc !== null && (!Number.isFinite(acc) || acc < 0))) {
+    throw new AppError("Coordinate fuori sede non valide", 400, "INVALID_OFFSITE_LOCATION");
+  }
+  return { latitude: lat, longitude: lng, accuracy: acc };
 }
 
 // ============================================================================
@@ -204,6 +270,7 @@ async function shouldValidateGeolocationForUser(userId) {
  */
 async function clockIn(req, res, next) {
   try {
+    return await withTimeRecordLock(req.user.id, async (_owner, assertActive) => {
     const approvedLeave = await findApprovedLeaveForToday(req.user.id);
 
     if (approvedLeave) {
@@ -256,8 +323,13 @@ async function clockIn(req, res, next) {
       }
     }
 
-    const shouldValidateGeolocation = await shouldValidateGeolocationForUser(
-      req.user.id
+    const metadata = readClockMetadata(req.body);
+    const offsiteLocation = metadata.mode === "offsite"
+      ? readOffsiteLocation(req.body?.location)
+      : null;
+
+    const shouldValidateGeolocation = metadata.mode === "office" && await shouldValidateGeolocationForUser(
+      req.user.id, req
     );
 
     const locationValidation = shouldValidateGeolocation
@@ -286,19 +358,38 @@ async function clockIn(req, res, next) {
 
     const clockInLocation = buildValidatedLocation(locationValidation);
 
-    const record = await TimeRecord.create({
+    const recordData = {
       user: req.user.id,
       clockIn: new Date(),
       clockOut: null,
       durationSec: 0,
       status: "open",
       clockInLocation,
-    });
+    };
+    // Mantieni il payload storico invariato se la chiamata non aggiunge dati.
+    if (metadata.mode === "offsite" || metadata.note) {
+      recordData.clockInMode = metadata.mode;
+      recordData.clockInNote = metadata.note;
+      if (metadata.mode === "offsite") {
+        recordData.clockInOffsiteReason = metadata.reason;
+        recordData.clockInOffsiteLocation = offsiteLocation;
+      }
+    }
+    await assertActive();
+    const record = await TimeRecord.create(recordData);
+    if (metadata.mode === "offsite" || metadata.note) {
+      scheduleTimeRecordEmail({
+        userId: req.user.id, mode: metadata.mode, note: metadata.note,
+        reason: metadata.reason, action: "entrata", at: record.clockIn || recordData.clockIn,
+      });
+    }
 
     return res.status(201).json({
       message: "Entrata registrata con successo",
       record,
     });
+    });
+
   } catch (err) {
     return next(err);
   }
@@ -322,6 +413,7 @@ async function clockIn(req, res, next) {
  */
 async function clockOut(req, res, next) {
   try {
+    return await withTimeRecordLock(req.user.id, async (_owner, assertActive) => {
     const approvedLeave = await findApprovedLeaveForToday(req.user.id);
 
     if (approvedLeave) {
@@ -382,8 +474,13 @@ async function clockOut(req, res, next) {
       );
     }
 
-    const shouldValidateGeolocation = await shouldValidateGeolocationForUser(
-      req.user.id
+    const metadata = readClockMetadata(req.body);
+    const offsiteLocation = metadata.mode === "offsite"
+      ? readOffsiteLocation(req.body?.location)
+      : null;
+
+    const shouldValidateGeolocation = metadata.mode === "office" && await shouldValidateGeolocationForUser(
+      req.user.id, req
     );
 
     const locationValidation = shouldValidateGeolocation
@@ -413,19 +510,39 @@ async function clockOut(req, res, next) {
     const clockOutLocation = buildValidatedLocation(locationValidation);
 
     const now = new Date();
-    const durationSec = calcDurationSec(openRecord.clockIn, now);
+    if ((openRecord.breaks || []).some(b => !b.endAt)) {
+      return next(new AppError('Termina la pausa prima di registrare l’uscita', 400, 'BREAK_STILL_OPEN'));
+    }
+    const { durationSec } = calculateWorkDuration(openRecord, now);
 
     openRecord.clockOut = now;
     openRecord.durationSec = durationSec;
     openRecord.status = "closed";
     openRecord.clockOutLocation = clockOutLocation;
+    if (metadata.mode === "offsite" || metadata.note) {
+      openRecord.clockOutMode = metadata.mode;
+      openRecord.clockOutNote = metadata.note;
+      if (metadata.mode === "offsite") {
+        openRecord.clockOutOffsiteReason = metadata.reason;
+        openRecord.clockOutOffsiteLocation = offsiteLocation;
+      }
+    }
 
+    await assertActive();
     await openRecord.save();
+    if (metadata.mode === "offsite" || metadata.note) {
+      scheduleTimeRecordEmail({
+        userId: req.user.id, mode: metadata.mode, note: metadata.note,
+        reason: metadata.reason, action: "uscita", at: now,
+      });
+    }
 
     return res.json({
       message: "Uscita registrata con successo",
       record: openRecord,
     });
+    });
+
   } catch (err) {
     return next(err);
   }
@@ -461,7 +578,7 @@ async function getMyRecords(req, res, next) {
         clockIn: filter,
       }).sort({ clockIn: 1 });
 
-      return res.json({ records });
+      return res.json({ records: records.map(withWorkDuration) });
     }
 
     // Ricerca per intervallo
@@ -481,7 +598,7 @@ async function getMyRecords(req, res, next) {
         clockIn: filter,
       }).sort({ clockIn: 1 });
 
-      return res.json({ records });
+      return res.json({ records: records.map(withWorkDuration) });
     }
 
     return next(
@@ -638,20 +755,12 @@ async function requestManualClockOut(req, res, next) {
       );
     }
 
-    const proposedDurationSec = calcDurationSec(
-      record.clockIn,
-      proposedClockOut
-    );
-
-    if (proposedDurationSec > MAX_MANUAL_CLOSURE_SECONDS) {
-      return next(
-        new AppError(
-          `La durata proposta supera il limite massimo di ${MAX_MANUAL_CLOSURE_HOURS} ore`,
-          400,
-          "MANUAL_CLOSURE_DURATION_TOO_LONG"
-        )
-      );
+    try {
+      calculateWorkDuration(record, proposedClockOut);
+    } catch (_) {
+      return next(new AppError('La chiusura proposta non è compatibile con le pause', 400, 'BREAK_RANGE_CONFLICT'));
     }
+
 
     record.manualClosureRequest = {
       proposedClockOut,
@@ -669,18 +778,79 @@ async function requestManualClockOut(req, res, next) {
     return res.json({
       message: "Richiesta di chiusura manuale inviata con successo",
       record,
-    });
-  } catch (err) {
+    });  } catch (err) {
     return next(err);
   }
 }
 
+/** Start/end lunch or other optional break inside the current work session. */
+async function changeBreak(req, res, next, ending) {
+  try {
+    return await withTimeRecordLock(req.user.id, async (_owner, assertActive) => {
+      const approvedLeave = await findApprovedLeaveForToday(req.user.id);
+      if (approvedLeave) return next(getApprovedLeaveBlockError(approvedLeave, ending ? 'fine pausa' : 'inizio pausa'));
+      const record = await findUserActiveOpenRecord(req.user.id);
+      if (!record || record.status !== 'open' || !isRecordFromToday(record)) {
+        return next(new AppError('Nessuna sessione lavorativa aperta oggi', 400, 'NO_ACTIVE_WORK_SESSION'));
+      }
+      const activeIndex = (record.breaks || []).findIndex(b => !b.endAt);
+      if (ending && activeIndex < 0) return next(new AppError('Nessuna pausa da terminare', 400, 'NO_OPEN_BREAK'));
+      if (!ending && activeIndex >= 0) return next(new AppError('Una pausa è già in corso', 400, 'BREAK_ALREADY_OPEN'));
+      const metadata = readClockMetadata(req.body);
+      const offsiteLocation = metadata.mode === 'offsite' ? readOffsiteLocation(req.body?.location) : null;
+      const shouldValidate = metadata.mode === 'office' && await shouldValidateGeolocationForUser(req.user.id, req);
+      const validated = shouldValidate ? validateClockInLocation(req.body?.location) : { enabled: false, allowed: true };
+      if (!validated.allowed) {
+        const errors = {
+          INVALID_LOCATION: 'Posizione GPS non valida',
+          LOCATION_CONFIG_ERROR: 'Configurazione GPS non valida: contatta l’amministratore',
+          LOCATION_OUT_OF_RANGE: 'Sei fuori dall’area aziendale: usa la modalità fuori sede',
+        };
+        return next(new AppError(errors[validated.code] || 'Verifica geolocalizzazione fallita', 400, validated.code));
+      }
+      const now = new Date();
+      if (ending) {
+        const current = record.breaks[activeIndex];
+        if (now <= new Date(current.startAt)) return next(new AppError('Fine pausa non valida', 400, 'INVALID_BREAK_END'));
+        current.endAt = now;
+        current.endMode = metadata.mode;
+        current.endLocation = buildValidatedLocation(validated);
+        current.endNote = metadata.note;
+        current.endOffsiteReason = metadata.reason;
+        current.endOffsiteLocation = offsiteLocation;
+      } else {
+        record.breaks.push({
+          startAt: now, startMode: metadata.mode,
+          startLocation: buildValidatedLocation(validated),
+          startNote: metadata.note,
+          startOffsiteReason: metadata.reason,
+          startOffsiteLocation: offsiteLocation,
+        });
+      }
+      await assertActive();
+      await record.save();
+      if (metadata.mode === 'offsite' || metadata.note) {
+        scheduleTimeRecordEmail({
+          userId: req.user.id, mode: metadata.mode, note: metadata.note,
+          reason: metadata.reason, action: ending ? 'fine pausa' : 'inizio pausa', at: now,
+        });
+      }
+      return res.json({ message: ending ? 'Fine pausa registrata' : 'Inizio pausa registrato', record });
+    });
+  } catch (err) { return next(err); }
+}
+const startBreak = (req, res, next) => changeBreak(req, res, next, false);
+const endBreak = (req, res, next) => changeBreak(req, res, next, true);
+
 module.exports = {
+  getGpsPolicy,
   findUserActiveOpenRecord,
   isRecordFromToday,
   calcDurationSec,
   clockIn,
   clockOut,
+  startBreak,
+  endBreak,
   getMyRecords,
   getMyOpenRecord,
   requestManualClockOut,
