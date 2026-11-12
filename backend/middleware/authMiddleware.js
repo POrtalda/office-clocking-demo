@@ -54,6 +54,11 @@ async function authMiddleware(req, res, next) {
     const decoded = isRemoteShowcase()
       ? jwt.verify(token, process.env.JWT_SECRET, jwtVerification())
       : jwt.verify(token, process.env.JWT_SECRET);
+    if(decoded.showcaseQuickLogin===true){
+      const {enabled,boundToShowcase,EMPLOYEES}=require("../utils/showcaseQuickLogin");
+      const {DATABASE}=require("../utils/remoteShowcase");
+      if(!isRemoteShowcase()||!enabled()||!boundToShowcase(require("mongoose").connection)||require("../models/User").db!==require("mongoose").connection||decoded.showcaseDatabase!==DATABASE||decoded.role!=="user"||!EMPLOYEES.includes(decoded.username))return next(new AppError("Sessione demo non autorizzata",401,"SHOWCASE_SESSION_REVOKED"));
+    }
     if (isRemoteShowcase()) {
       const User = require("../models/User");
       const current = await User.findById(decoded.id).select("username role isActive").lean();

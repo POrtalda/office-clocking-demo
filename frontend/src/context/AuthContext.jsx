@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
+import {storeSession,clearSession,restoreSession} from "../utils/authSession";
+import {quickLoginBody,validateQuickSession} from "../utils/showcaseLogin";
 import { AuthContext } from "./auth-context";
 import AccountThemeProvider from "../components/Theme/AccountThemeProvider";
 
@@ -34,14 +36,19 @@ export function AuthProvider({ children }) {
    *   role?: string
    * }
    */
-  async function login(username, password) {
+  function login(username,password){return authenticate("/api/auth/login",{username,password});}
+  function loginShowcase(profile){
+    if(import.meta.env.VITE_SHOWCASE_REMOTE!=="true")return Promise.resolve({success:false,message:"Accesso non disponibile."});
+    return authenticate("/api/demo/showcase/session",quickLoginBody(profile),profile);
+  }
+  async function authenticate(endpoint,body,expectedProfile) {
     try {
-      const res = await fetch(`${BASE_URL}/api/auth/login`, {
+      const res = await fetch(`${BASE_URL}${endpoint}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify(body),
       });
 
       /**
@@ -106,8 +113,8 @@ export function AuthProvider({ children }) {
       // =========================
 
       // Salvo token e utente nel localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("authUser", JSON.stringify(data.user));
+      if(expectedProfile&&!validateQuickSession(data,expectedProfile))throw new Error("Sessione demo non valida");
+      storeSession(localStorage,data.token,data.user);
 
       // Aggiorno stato globale utente
       setUser(data.user);
@@ -143,8 +150,7 @@ export function AuthProvider({ children }) {
    * - può impostare un messaggio da mostrare in login
    */
   const logout = useCallback((message = "") => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("authUser");
+    clearSession(localStorage);
 
     setUser(null);
     setSessionMessage(message);
@@ -167,64 +173,9 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     async function checkAuth() {
-      const token = localStorage.getItem("token");
-      const savedUser = localStorage.getItem("authUser");
-
-      // Se non c'è token, non sono autenticato
-      if (!token) {
-        setUser(null);
-        setAuthLoading(false);
-        return;
-      }
-
-      /**
-       * Carico subito l'utente da localStorage
-       * così evito flicker visivo durante il refresh pagina.
-       */
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (error) {
-          console.error("Errore parsing authUser:", error);
-          localStorage.removeItem("authUser");
-        }
-      }
-
-      try {
-        // Verifica token sul backend
-        const res = await fetch(`${BASE_URL}/api/auth/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        // Token non valido o scaduto
-        if (res.status === 401 || res.status === 403) {
-          handleSessionExpired();
-          setAuthLoading(false);
-          return;
-        }
-
-        // Altri errori HTTP
-        if (!res.ok) {
-          throw new Error("Errore controllo autenticazione");
-        }
-
-        const data = await res.json();
-
-        // Se il backend restituisce user valido, aggiorno tutto
-        if (data?.user) {
-          setUser(data.user);
-          localStorage.setItem("authUser", JSON.stringify(data.user));
-        } else {
-          handleSessionExpired();
-        }
-      } catch (error) {
-        console.error("Errore /api/auth/me:", error);
-        handleSessionExpired();
-      } finally {
-        setAuthLoading(false);
-      }
+      const result=await restoreSession(BASE_URL,localStorage);
+      if(!result.stale){if(result.expired)handleSessionExpired();else setUser(result.user);}
+      setAuthLoading(false);
     }
 
     checkAuth();
@@ -236,6 +187,7 @@ export function AuthProvider({ children }) {
         user,
         authLoading,
         login,
+        loginShowcase,
         logout,
         sessionMessage,
         setSessionMessage,

@@ -9,10 +9,11 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "./context/auth-context";
 import "./App.css";
+import ShowcaseLogin from "./components/ShowcaseLogin";
 
 function App() {
   // Dati e funzioni condivise dal context autenticazione
-  const { login, user, sessionMessage, setSessionMessage } =
+  const { login, loginShowcase, user, sessionMessage, setSessionMessage } =
     useContext(AuthContext);
 
   // Hook React Router per navigare tra le pagine
@@ -91,6 +92,12 @@ function App() {
         block: "start",
       });
     });
+  }
+
+  async function handleShowcaseLogin(profile){
+    if(isSubmitting)return {success:false,message:"Accesso già in corso."};
+    setIsSubmitting(true);
+    try{return await loginShowcase(profile);}finally{setIsSubmitting(false);}
   }
 
   function getDemoAccountLabel(account) {
@@ -323,7 +330,7 @@ function App() {
             </p>
           </div>
 
-          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p className="login-subtitle">Showcase online · accesso su invito · email disabilitate</p>}
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p className="login-subtitle">Showcase online · dipendenti con un clic · Admin riservato · email disabilitate</p>}
 
           {sessionMessage && (
             <div className="login-message login-message-warning">
@@ -343,6 +350,8 @@ function App() {
               <strong>{formatCountdown(retryAfterSec)}</strong>.
             </div>
           )}
+
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <ShowcaseLogin baseUrl={import.meta.env.VITE_API_URL} onLogin={handleShowcaseLogin} onPresenter={profile=>{setUsername(profile);setPassword("");setError("");requestAnimationFrame(()=>{loginFormRef.current?.scrollIntoView({behavior:"smooth",block:"start"});loginFormRef.current?.querySelector("#password")?.focus();});}} />}
 
           <form ref={loginFormRef} className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">

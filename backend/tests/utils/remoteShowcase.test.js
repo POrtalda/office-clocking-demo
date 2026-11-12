@@ -85,3 +85,8 @@ test("target assertion precedes any database mutation and refuses a changed targ
  const assertTarget=jest.fn(async()=>{throw Error("Wrong target");});
  await expect(populateNewDatabase(db,demoDataset(),{},jest.fn(),assertTarget)).rejects.toThrow("Wrong target");expect(createCollection).not.toHaveBeenCalled();expect(assertTarget).toHaveBeenCalledTimes(1);
 });
+
+test("public Showcase login flag is optional and only explicit boolean strings are accepted",()=>{
+ for(const value of [undefined,"false","true"]){const env=config();if(value!==undefined)env.SHOWCASE_QUICK_LOGIN_ENABLED=value;expect(()=>assertRemoteShowcaseConfig(env)).not.toThrow();}
+ expect(()=>assertRemoteShowcaseConfig({...config(),SHOWCASE_QUICK_LOGIN_ENABLED:"TRUE"})).toThrow();
+});

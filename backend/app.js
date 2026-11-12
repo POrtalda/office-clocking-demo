@@ -158,6 +158,7 @@ const apiLimiter = rateLimit({
 
 app.use("/api", apiLimiter);
 app.use("/api/demo", demoRoutes);
+app.use("/api/demo/showcase", require("./routes/showcaseLogin"));
 
 app.use("/api/auth", authRouter);
 app.use("/api/records", recordsRouter);

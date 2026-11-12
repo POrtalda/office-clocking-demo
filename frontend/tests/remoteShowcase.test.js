@@ -19,13 +19,13 @@ test("isolated output has HTTPS CSP, no API fallback and no local dotenv loading
  const app=await readFile(new URL("../src/App.jsx",import.meta.url),"utf8");assert.ok(app.includes('import.meta.env.VITE_SHOWCASE_REMOTE !== "true"'));
 });
 
-test("remote login hides local autofill and account mutation buttons are visibly disabled (SSR)",async()=>{
+test("remote selector has no passwords, presenter Admin is protected and account mutations stay disabled (SSR)",async()=>{
  const {createServer}=await import("vite");const React=await import("react");const {renderToStaticMarkup}=await import("react-dom/server");
  const server=await createServer({define:{"import.meta.env.VITE_SHOWCASE_REMOTE":'"true"',"import.meta.env.VITE_DEMO_MODE":'"true"'},optimizeDeps:{noDiscovery:true,include:[]},server:{middlewareMode:true,hmr:false,ws:false},appType:"custom"});
  try {
   const {MemoryRouter}=await import("react-router-dom");const {AuthContext}=await server.ssrLoadModule("/src/context/auth-context.js");const {default:Login}=await server.ssrLoadModule("/src/App.jsx");
   const html=renderToStaticMarkup(React.createElement(MemoryRouter,null,React.createElement(AuthContext.Provider,{value:{user:null,login(){},setSessionMessage(){}}},React.createElement(Login))));
-  assert.ok(html.includes("accesso su invito"));assert.ok(!html.includes("1234"));assert.ok(!html.includes("login-demo-accounts"));
+  assert.ok(html.includes("Admin riservato"));assert.ok(!html.includes("1234"));assert.ok(!html.includes("login-demo-accounts"));assert.ok(html.includes("Admin Demo"));assert.ok(html.includes("Dipendente 15"));assert.ok(html.includes("credenziali richieste"));
   const {default:Users}=await server.ssrLoadModule("/src/components/Home-admin/AdminUsersSection.jsx");
   const markup=renderToStaticMarkup(React.createElement(Users,{users:[],newUsername:"",newPassword:"",newFullName:"",newEmail:"",newRole:"user",getRoleLabel:role=>role,uiLabels:{fields:{role:"Ruolo",status:"Stato"}}}));
   assert.match(markup,/<button[^>]*disabled=""[^>]*>Crea nuovo utente<\/button>/);assert.ok(markup.includes("sola lettura"));
