@@ -90,3 +90,8 @@ test("public Showcase login flag is optional and only explicit boolean strings a
  for(const value of [undefined,"false","true"]){const env=config();if(value!==undefined)env.SHOWCASE_QUICK_LOGIN_ENABLED=value;expect(()=>assertRemoteShowcaseConfig(env)).not.toThrow();}
  expect(()=>assertRemoteShowcaseConfig({...config(),SHOWCASE_QUICK_LOGIN_ENABLED:"TRUE"})).toThrow();
 });
+
+test("Admin quick flag is optional, explicit and rejects ambiguous values",()=>{
+ for(const value of [undefined,"true","false"]){const env=config();if(value!==undefined)env.SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED=value;expect(()=>assertRemoteShowcaseConfig(env)).not.toThrow();}
+ expect(()=>assertRemoteShowcaseConfig({...config(),SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED:"TRUE"})).toThrow();
+});

@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import { authFetch } from "../../utils/authFetch";
 import { toRomeInputDateTime } from "../../utils/dateUtils";
 import "./AdminRecordEditor.css";
-export default function AdminRecordEditor({ record, baseUrl, handleSessionExpired, navigate, onSaved }) {
+export default function AdminRecordEditor({ record, baseUrl, handleSessionExpired, navigate, onSaved, readOnly = false }) {
   const id = useId();
   const [open, setOpen] = useState(false);
   const [clockIn, setClockIn] = useState(() => toRomeInputDateTime(record.clockIn));
@@ -26,7 +26,7 @@ export default function AdminRecordEditor({ record, baseUrl, handleSessionExpire
     } catch (err) { setError(err.message || "Correzione non riuscita"); }
     finally { setSaving(false); }
   }
-  if (record.status !== "closed" || !record.clockOut) return null;
+  if (readOnly || record.status !== "closed" || !record.clockOut) return null;
   return (
     <div className="admin-record-editor">
       <button type="button" className="homeadmin-btn homeadmin-btn-secondary homeadmin-btn-sm" aria-expanded={open} aria-controls={`${id}-form`} onClick={() => setOpen(value => !value)} disabled={saving}>Correggi {open ? "▲" : "▼"}</button>

@@ -1,3 +1,5 @@
+**Aggiornamento Admin:** la successiva patch SHOWCASE_ADMIN_QUICK_LOGIN_2026-11-12.md abilita Admin Demo con un clic e scope di sola consultazione, mediante un flag dedicato. La descrizione del presentatore sotto si riferisce alla versione precedente; il login con password rimane distinto.
+
 # Showcase — accesso con un clic, 12 novembre 2026
 
 ## Funzionalità preparata localmente

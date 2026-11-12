@@ -31,6 +31,7 @@ test("actual User sections, Admin loading state, attendance/correction controls 
     assert.ok(audit.includes("Entrata fuori sede")); assert.ok(audit.includes("Cliente")); assert.ok(audit.includes("Correzione concordata"));
     const { default: Editor } = await server.ssrLoadModule("/src/components/Home-admin/AdminRecordEditor.jsx");
     const edit = renderToStaticMarkup(React.createElement(Editor, { record: { status: "closed", clockIn: "2026-11-11T07:00:00Z", clockOut: "2026-11-11T16:00:00Z" } }));
+    assert.equal(renderToStaticMarkup(React.createElement(Editor, { readOnly:true, record:{status:"closed",clockIn:"2026-11-11T07:00:00Z",clockOut:"2026-11-11T16:00:00Z"} })), "");
     assert.ok(edit.includes("Correggi")); assert.ok(edit.includes('aria-expanded="false"'));
     assert.equal(renderToStaticMarkup(React.createElement(Editor, { record: { status: "cancelled" } })), "");
     const { default: Attendance } = await server.ssrLoadModule("/src/components/Home-admin/AdminDailyAttendance.jsx");

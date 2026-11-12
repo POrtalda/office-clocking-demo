@@ -186,6 +186,7 @@ async function getMe(req, res, next) {
         id: req.user.id,
         username: req.user.username,
         role: req.user.role,
+        ...(req.user.readOnly?{readOnly:true}:{}),
       },
     });
   } catch (err) {

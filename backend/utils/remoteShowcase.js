@@ -21,7 +21,7 @@ function assertAtlasTarget(uri, host) {
   return DATABASE;
 }
 const RUNTIME_KEYS = ["APP_ENV","NODE_ENV","DEMO_MODE","DEMO_LOCAL_GPS_BYPASS","GEOLOCATION_CLOCK_IN_ENABLED","SHOWCASE_EMAIL_MODE","SHOWCASE_ADMIN_USERNAME","CLIENT_URL","SHOWCASE_API_URL","SHOWCASE_ATLAS_HOST","MONGO_URI","JWT_SECRET","OFFICE_LAT","OFFICE_LNG","OFFICE_RADIUS_METERS"];
-const CONFIG_CATEGORIES = new Set([...RUNTIME_KEYS.map(key=>`MISSING_${key}`),...RUNTIME_KEYS.map(key=>`INVALID_${key}`),"GPS_FLAG_INVALID","QUICK_LOGIN_FLAG_INVALID","ORIGINS_INVALID","JWT_SECRET_INVALID","SMTP_NOT_ALLOWED","ATLAS_TARGET_INVALID","OFFICE_LOCATION_INVALID"]);
+const CONFIG_CATEGORIES = new Set([...RUNTIME_KEYS.map(key=>`MISSING_${key}`),...RUNTIME_KEYS.map(key=>`INVALID_${key}`),"GPS_FLAG_INVALID","QUICK_LOGIN_FLAG_INVALID","ADMIN_QUICK_LOGIN_FLAG_INVALID","ORIGINS_INVALID","JWT_SECRET_INVALID","SMTP_NOT_ALLOWED","ATLAS_TARGET_INVALID","OFFICE_LOCATION_INVALID"]);
 function invalidConfig(category) {
   const error=new Error("Configurazione Showcase non valida");
   error.showcaseConfigCategory=category;
@@ -34,6 +34,7 @@ function assertRemoteShowcaseConfig(env = process.env) {
   for(const [key,value] of Object.entries(flags))if(env[key]!==value)throw invalidConfig(`INVALID_${key}`);
   if (env.SHOWCASE_GPS_CHECK_DISABLED !== undefined && !["true", "false"].includes(env.SHOWCASE_GPS_CHECK_DISABLED)) throw invalidConfig("GPS_FLAG_INVALID");
   if (env.SHOWCASE_QUICK_LOGIN_ENABLED !== undefined && !["true","false"].includes(env.SHOWCASE_QUICK_LOGIN_ENABLED)) throw invalidConfig("QUICK_LOGIN_FLAG_INVALID");
+  if (env.SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED !== undefined && !["true","false"].includes(env.SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED)) throw invalidConfig("ADMIN_QUICK_LOGIN_FLAG_INVALID");
   const client = httpsOrigin(env.CLIENT_URL), api = httpsOrigin(env.SHOWCASE_API_URL);
   if (!client || !api || client === api) throw invalidConfig("ORIGINS_INVALID");
   if (!/^[a-f0-9]{64,128}$/.test(env.JWT_SECRET || "") || new Set(env.JWT_SECRET).size < 10) throw invalidConfig("JWT_SECRET_INVALID");

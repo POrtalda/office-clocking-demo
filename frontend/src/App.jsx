@@ -330,7 +330,7 @@ function App() {
             </p>
           </div>
 
-          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p className="login-subtitle">Showcase online · dipendenti con un clic · Admin riservato · email disabilitate</p>}
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p className="login-subtitle">Showcase online · dipendenti con un clic · Admin Demo in sola consultazione · email disabilitate</p>}
 
           {sessionMessage && (
             <div className="login-message login-message-warning">
@@ -351,7 +351,7 @@ function App() {
             </div>
           )}
 
-          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <ShowcaseLogin baseUrl={import.meta.env.VITE_API_URL} onLogin={handleShowcaseLogin} onPresenter={profile=>{setUsername(profile);setPassword("");setError("");requestAnimationFrame(()=>{loginFormRef.current?.scrollIntoView({behavior:"smooth",block:"start"});loginFormRef.current?.querySelector("#password")?.focus();});}} />}
+          {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <ShowcaseLogin baseUrl={import.meta.env.VITE_API_URL} onLogin={handleShowcaseLogin} />}
 
           <form ref={loginFormRef} className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">

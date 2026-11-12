@@ -133,6 +133,7 @@ export default function Home_admin() {
   const { logout, user, handleSessionExpired } = useContext(AuthContext);
   const navigate = useNavigate();
   const BASE_URL = import.meta.env.VITE_API_URL;
+  const readOnlyAdmin = user?.readOnly === true;
   const isRemoteShowcase = import.meta.env.VITE_SHOWCASE_REMOTE === "true";
   const isDemoMode = import.meta.env.VITE_DEMO_MODE === "true";
   const logoutTimerRef = useRef(null);
@@ -1808,6 +1809,7 @@ export default function Home_admin() {
           </div>
         )}
 
+        {readOnlyAdmin && <p role="status">Admin Demo · sola consultazione · sessione rapida di 10 minuti. Modifiche e approvazioni disabilitate.</p>}
         {import.meta.env.VITE_SHOWCASE_REMOTE === "true" && <p>Showcase online · dati dimostrativi · email disabilitate · account e impostazioni in sola lettura</p>}
 
         {isDemoMode && (
@@ -2101,7 +2103,7 @@ export default function Home_admin() {
                               onClick={() =>
                                 handleApproveLeaveRequest(leave._id)
                               }
-                              disabled={isAnyLeaveActionRunning}
+                              disabled={readOnlyAdmin || isAnyLeaveActionRunning}
                             >
                               {isApproving
                                 ? "Approvazione in corso..."
@@ -2110,7 +2112,7 @@ export default function Home_admin() {
                             <button
                               className="homeadmin-btn homeadmin-btn-danger homeadmin-btn-sm"
                               onClick={() => handleRejectLeaveRequest(leave)}
-                              disabled={isAnyLeaveActionRunning}
+                              disabled={readOnlyAdmin || isAnyLeaveActionRunning}
                             >
                               {isRejecting
                                 ? "Rifiuto in corso..."
@@ -2299,7 +2301,7 @@ export default function Home_admin() {
                         <button
                           className="homeadmin-btn homeadmin-btn-danger"
                           onClick={() => cancelApprovedLeave(leave._id)}
-                          disabled={approvedLeavesLoading}
+                          disabled={readOnlyAdmin || approvedLeavesLoading}
                         >
                           Annulla
                         </button>
@@ -2437,7 +2439,7 @@ export default function Home_admin() {
                               onClick={() =>
                                 handleApproveManualRequest(record._id)
                               }
-                              disabled={rowLoading}
+                              disabled={readOnlyAdmin || rowLoading}
                             >
                               {isApproving
                                 ? "Approvazione in corso..."
@@ -2449,7 +2451,7 @@ export default function Home_admin() {
                               onClick={() =>
                                 handleRejectManualRequest(record._id)
                               }
-                              disabled={rowLoading}
+                              disabled={readOnlyAdmin || rowLoading}
                             >
                               {isRejecting ? "Rifiuto in corso..." : "Rifiuta"}
                             </button>
@@ -3144,13 +3146,13 @@ export default function Home_admin() {
                                 </span>
                               </td>
                               <td>
-                                <AdminRecordEditor record={record} baseUrl={BASE_URL} handleSessionExpired={handleSessionExpired} navigate={navigate} onSaved={refreshAnalyticsAfterAdminAction} />
+                                <AdminRecordEditor readOnly={readOnlyAdmin} record={record} baseUrl={BASE_URL} handleSessionExpired={handleSessionExpired} navigate={navigate} onSaved={refreshAnalyticsAfterAdminAction} />
                                 {canCancelTimeRecord(record) ? (
                                   <button
                                     type="button"
                                     className="homeadmin-btn homeadmin-btn-danger homeadmin-btn-sm"
                                     onClick={() => cancelTimeRecord(record._id)}
-                                    disabled={dayLoading}
+                                    disabled={readOnlyAdmin || dayLoading}
                                   >
                                     Annulla
                                   </button>

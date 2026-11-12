@@ -13,7 +13,7 @@ function checkObjects(seed, runtime, repo, fileSystem = fs) {
   const missingRuntime = RUNTIME_KEYS.filter(key => !runtime[key]);
   const result = { offline: true, seed: { valid: false, missing: missingSeed }, runtime: { valid: false, missing: missingRuntime }, separateAccounts: false };
   const allowed = (object, keys) => Object.keys(object).every(key => keys.includes(key));
-  if (!allowed(seed,SEED_KEYS) || !allowed(runtime,[...RUNTIME_KEYS,"SHOWCASE_GPS_CHECK_DISABLED","SHOWCASE_QUICK_LOGIN_ENABLED"])) { result.code = "UNEXPECTED_CONFIGURATION_KEYS"; return result; }
+  if (!allowed(seed,SEED_KEYS) || !allowed(runtime,[...RUNTIME_KEYS,"SHOWCASE_GPS_CHECK_DISABLED","SHOWCASE_QUICK_LOGIN_ENABLED","SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED"])) { result.code = "UNEXPECTED_CONFIGURATION_KEYS"; return result; }
   try {
     if (seed.SHOWCASE_ATLAS_HOST !== ATLAS_HOST) throw new Error();
     assertSeedConfig(seed); assertCredentialsPath(seed.SHOWCASE_CREDENTIALS_FILE,repo,fileSystem);

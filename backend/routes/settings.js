@@ -6,7 +6,9 @@ const router = express.Router();
 
 router.get("/", authMiddleware, async (req, res, next) => {
   try {
-    const settings = await AppSettings.findOneAndUpdate(
+    const settings = req.user.readOnly
+      ? (await AppSettings.findOne({key:"global"}).lean() || {leaveMinAdvanceDays:2,leaveNotificationEmails:[]})
+      : await AppSettings.findOneAndUpdate(
       { key: "global" },
       { $setOnInsert: { key: "global" } },
       { new: true, upsert: true, setDefaultsOnInsert: true }

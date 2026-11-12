@@ -10,8 +10,10 @@ GEOLOCATION_CLOCK_IN_ENABLED=true
 # Optional SERVER-ONLY Showcase exemption. Missing/false keeps GPS required.
 # Set explicitly to true only on the verified remote Showcase instance.
 SHOWCASE_GPS_CHECK_DISABLED=false
-# Optional server-only public employee sessions; Admin always requires presenter credentials.
+# Optional server-only public employee sessions; Admin rapid access has an additional read-only-only opt-in.
 SHOWCASE_QUICK_LOGIN_ENABLED=false
+# Additional server-only opt-in: public Admin Demo is always read-only.
+SHOWCASE_ADMIN_QUICK_LOGIN_ENABLED=false
 SHOWCASE_EMAIL_MODE=disabled
 SHOWCASE_ADMIN_USERNAME=showcase_admin
 CLIENT_URL=https://office-clocking-demo.netlify.app
