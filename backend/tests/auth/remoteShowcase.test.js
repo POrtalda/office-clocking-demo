@@ -97,6 +97,17 @@ test("remote omission cannot be forged or mixed with offsite or coordinates; off
  expect((await api("post","/api/records/clock-in").set("Authorization",auth).send({showcaseWithoutGps:true})).status).toBe(403);
 });
 
+test("Render HTTP health probes and forwarded HTTPS preserve exact host/origin policy",async()=>{
+ const mongoose=require("mongoose");const previousState=mongoose.connection._readyState;mongoose.connection._readyState=1;
+ try {
+  expect((await request(app).get("/healthz")).status).toBe(200);
+  mongoose.connection._readyState=0;expect((await request(app).get("/healthz")).status).toBe(503);
+ } finally {mongoose.connection._readyState=previousState;}
+ expect((await api("get","/")).status).toBe(200);
+ expect((await api("get","/").set("X-Forwarded-Proto","http")).status).toBe(400);
+ expect((await api("get","/").set("X-Forwarded-Host","foreign.onrender.com")).status).toBe(400);
+});
+
 test("per-IP limit stops distributed usernames in addition to existing account limiter",async()=>{
  let result;
  for(let i=0;i<31;i++)result=await api("post","/api/auth/login").send({username:`fixture_${i}`,password:"wrong"});

@@ -20,16 +20,26 @@ function assertAtlasTarget(uri, host) {
   }
   return DATABASE;
 }
+const RUNTIME_KEYS = ["APP_ENV","NODE_ENV","DEMO_MODE","DEMO_LOCAL_GPS_BYPASS","GEOLOCATION_CLOCK_IN_ENABLED","SHOWCASE_EMAIL_MODE","SHOWCASE_ADMIN_USERNAME","CLIENT_URL","SHOWCASE_API_URL","SHOWCASE_ATLAS_HOST","MONGO_URI","JWT_SECRET","OFFICE_LAT","OFFICE_LNG","OFFICE_RADIUS_METERS"];
+const CONFIG_CATEGORIES = new Set([...RUNTIME_KEYS.map(key=>`MISSING_${key}`),...RUNTIME_KEYS.map(key=>`INVALID_${key}`),"GPS_FLAG_INVALID","ORIGINS_INVALID","JWT_SECRET_INVALID","SMTP_NOT_ALLOWED","ATLAS_TARGET_INVALID","OFFICE_LOCATION_INVALID"]);
+function invalidConfig(category) {
+  const error=new Error("Configurazione Showcase non valida");
+  error.showcaseConfigCategory=category;
+  return error;
+}
+function safeConfigCategory(error) {return CONFIG_CATEGORIES.has(error?.showcaseConfigCategory)?error.showcaseConfigCategory:"CONFIGURATION_INVALID";}
 function assertRemoteShowcaseConfig(env = process.env) {
-  if (!isRemoteShowcase(env) || env.NODE_ENV !== "production" || env.DEMO_MODE !== "true" || env.DEMO_LOCAL_GPS_BYPASS !== "false" || env.GEOLOCATION_CLOCK_IN_ENABLED !== "true" || env.SHOWCASE_EMAIL_MODE !== "disabled" || env.SHOWCASE_ADMIN_USERNAME !== ADMIN) throw new Error("Showcase: profilo remoto incompleto o non sicuro");
-  if (env.SHOWCASE_GPS_CHECK_DISABLED !== undefined && !["true", "false"].includes(env.SHOWCASE_GPS_CHECK_DISABLED)) throw new Error("Showcase: flag GPS remoto non valido");
+  for(const key of RUNTIME_KEYS)if(!env[key])throw invalidConfig(`MISSING_${key}`);
+  const flags={APP_ENV:"showcase",NODE_ENV:"production",DEMO_MODE:"true",DEMO_LOCAL_GPS_BYPASS:"false",GEOLOCATION_CLOCK_IN_ENABLED:"true",SHOWCASE_EMAIL_MODE:"disabled",SHOWCASE_ADMIN_USERNAME:ADMIN};
+  for(const [key,value] of Object.entries(flags))if(env[key]!==value)throw invalidConfig(`INVALID_${key}`);
+  if (env.SHOWCASE_GPS_CHECK_DISABLED !== undefined && !["true", "false"].includes(env.SHOWCASE_GPS_CHECK_DISABLED)) throw invalidConfig("GPS_FLAG_INVALID");
   const client = httpsOrigin(env.CLIENT_URL), api = httpsOrigin(env.SHOWCASE_API_URL);
-  if (!client || !api || client === api) throw new Error("Showcase: richieste due origini HTTPS distinte ed esatte");
-  if (!/^[a-f0-9]{64,128}$/.test(env.JWT_SECRET || "") || new Set(env.JWT_SECRET).size < 10) throw new Error("Showcase: generare una chiave JWT casuale dedicata di almeno 32 byte hex");
-  if (Object.keys(env).some(key => key.startsWith("SMTP_") && env[key])) throw new Error("Showcase: rimuovere tutte le configurazioni SMTP");
-  assertAtlasTarget(env.MONGO_URI, env.SHOWCASE_ATLAS_HOST);
+  if (!client || !api || client === api) throw invalidConfig("ORIGINS_INVALID");
+  if (!/^[a-f0-9]{64,128}$/.test(env.JWT_SECRET || "") || new Set(env.JWT_SECRET).size < 10) throw invalidConfig("JWT_SECRET_INVALID");
+  if (Object.keys(env).some(key => key.startsWith("SMTP_") && env[key])) throw invalidConfig("SMTP_NOT_ALLOWED");
+  try {assertAtlasTarget(env.MONGO_URI, env.SHOWCASE_ATLAS_HOST);}catch{throw invalidConfig("ATLAS_TARGET_INVALID");}
   const lat = Number(env.OFFICE_LAT), lng = Number(env.OFFICE_LNG), radius = Number(env.OFFICE_RADIUS_METERS);
-  if (!env.OFFICE_LAT || !env.OFFICE_LNG || !Number.isFinite(lat) || Math.abs(lat) > 90 || !Number.isFinite(lng) || Math.abs(lng) > 180 || !Number.isFinite(radius) || radius < 1 || radius > 1000) throw new Error("Showcase: configurare la sede reale e un raggio da 1 a 1000 metri");
+  if (!Number.isFinite(lat) || Math.abs(lat) > 90 || !Number.isFinite(lng) || Math.abs(lng) > 180 || !Number.isFinite(radius) || radius < 1 || radius > 1000) throw invalidConfig("OFFICE_LOCATION_INVALID");
   return { client, api, database: DATABASE };
 }
 function canUseRemoteShowcaseGps(req, env = process.env) {
@@ -44,4 +54,4 @@ function jwtVerification(env = process.env) { return { algorithms: ["HS256"], is
 function strongDemoPassword(password) {
   return typeof password === "string" && password.length >= 24 && password.length <= 128 && new Set(password).size >= 10;
 }
-module.exports = { canUseRemoteShowcaseGps, DATABASE, PURPOSE, ADMIN, ISSUER, isRemoteShowcase, httpsOrigin, assertAtlasTarget, assertRemoteShowcaseConfig, jwtOptions, jwtVerification, strongDemoPassword };
+module.exports = { safeConfigCategory, canUseRemoteShowcaseGps, DATABASE, PURPOSE, ADMIN, ISSUER, isRemoteShowcase, httpsOrigin, assertAtlasTarget, assertRemoteShowcaseConfig, jwtOptions, jwtVerification, strongDemoPassword };

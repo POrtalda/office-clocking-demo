@@ -78,7 +78,7 @@ const allowedOrigins = CLIENT_URL.split(",")
   .map((url) => url.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
-if (!IS_TEST) {
+if (!IS_TEST && process.env.APP_ENV !== "showcase") {
   console.log("CLIENT_URL raw:", CLIENT_URL);
   console.log("Allowed origins:", allowedOrigins);
 }
@@ -124,7 +124,7 @@ app.use(
       }
 
       // Log utile per debug in produzione
-      if (!IS_TEST) {
+      if (!IS_TEST && process.env.APP_ENV !== "showcase") {
         console.log("Origin bloccato dal CORS:", normalizedOrigin);
         console.log("Allowed origins:", allowedOrigins);
       }
